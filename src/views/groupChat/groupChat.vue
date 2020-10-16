@@ -223,6 +223,13 @@ export default {
   sockets: {
     // connect:查看socket是否渲染成功
     connect() {},
+    reconnect(data) {
+      console.log('重连')
+       this.$socket.emit("group", {
+              username: this.username,
+              group_id: this.gid
+            });
+      },
     // 收到群消息
     groupMsg(data) {
       if(this.username !== data.from_name) {
@@ -581,7 +588,6 @@ export default {
             if(!Array.isArray(result.data.data)){
               this.announcement = result.data.data;
             }
-            
           }
         })
         .catch(err => {

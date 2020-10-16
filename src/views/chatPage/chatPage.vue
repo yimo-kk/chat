@@ -248,8 +248,13 @@ export default {
      }
   },
   methods: { 
+    
     enter(event) {
-      if (event.keyCode === 13) {
+       if (event.keyCode === 13 && event.ctrlKey ||event.altKey) {
+        this.sendText +='\n'
+      }else if(event.keyCode === 13 &&event.shiftKey){
+        // shitt+回车自带换行
+      }else if (event.keyCode === 13 && !this.isButtom) {
         this.sendType = 0;
         event.preventDefault();
         this.send(this.sendText);

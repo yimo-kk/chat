@@ -78,7 +78,7 @@ export default new Vuex.Store({
       document.title =tit //'妮姬客服';
     },
     setTitle(state,num){
-      state.tit = `你有${num}新消息`
+      state.tit = `你有${num}条新消息`
     },
     setNum(state,num){
       state.num = num

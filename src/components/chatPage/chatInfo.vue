@@ -331,7 +331,7 @@ export default {
                 var a = document.createElement("a");
                 document.body.appendChild(a);
                 a.href = url;
-                a.download = fileName
+                a.download =  typeof content == "string"? filename:content.filename
                 a.click();
             }
             request.send();
@@ -340,13 +340,14 @@ export default {
           let evt = document.createEvent("HTMLEvents");
           evt.initEvent("click", true, true); //initEvent 不加后两个参数在FF下会报错  事件类型，是否冒泡，是否阻止浏览器的默认行为
             aLink.href = dUrl;
-            aLink.download = fileName;
+            aLink.download = typeof content == "string"? filename:content.filename;
           
           aLink.click();
          }
         
 
       } catch (error) {
+        console.log(error)
         this.$toast("文件已过期！");
       }
     },

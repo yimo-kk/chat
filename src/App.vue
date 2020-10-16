@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <router-view />
-    <audio id="audio" preload="auto" loop>
+    <audio id="audio" preload="auto" >
       <source src="./assets/voice.mp3" type="audio/mp3" autoplay />
     </audio>
   </div>
