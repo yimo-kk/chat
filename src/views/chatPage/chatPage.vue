@@ -150,12 +150,13 @@ import {
 const lamejs = require("lamejs");
 const appData = require("@/assets/emojis.json");
 import Recorder from "js-audio-recorder";
+let recorder
 if(!isIE()){
-const recorder = new Recorder({
-  sampleBits: 8, // 采样位数，支持 8 或 16，默认是16
-  sampleRate: 11025, // 采样率，支持 11025、16000、22050、24000、44100、48000，根据浏览器默认值，我的chrome是48000
-  numChannels: 1 // 声道，支持 1 或 2， 默认是1e
-});
+    recorder = new Recorder({
+    sampleBits: 8, // 采样位数，支持 8 或 16，默认是16
+    sampleRate: 11025, // 采样率，支持 11025、16000、22050、24000、44100、48000，根据浏览器默认值，我的chrome是48000
+    numChannels: 1 // 声道，支持 1 或 2， 默认是1e
+  });
 }
 
 
@@ -207,11 +208,10 @@ export default {
     // connect:查看socket是否渲染成功
     connect() {},
     // disconnect:检测socket断开连接
-    disconnect(data) {},
-    reconnect(data) {},
-    connect_failed() {
-      cosnole.log("连接失败");
+    disconnect(data) {
+      console.log('断开')
     },
+    reconnect(data) {console.log('重连')},
     //有客服接待通知
     prompt(data) {
       data.kefu_name = "kefu";
@@ -220,7 +220,6 @@ export default {
     },
     // 客服给用户发送消息
     serviceMsg(data) {
-      console.log(data,3333)
       let num = this.$store.state.num
       this.$store.commit('setNum',++num)
       this.$store.commit('setTitle',num)
@@ -278,7 +277,6 @@ export default {
       this.sendType === 0 &&
         (sendMessage.message = conversion(my_send.message));
       this.messages.push(my_send);
-      console.log(my_send,3333)
       this.$socket.emit("message", sendMessage);
       this.sendText = "";
       this.faceShow = false;
@@ -313,8 +311,13 @@ export default {
       formdata.append("filename", file.file.name);
       serviceSendChatFile(formdata)
         .then(result => {
-          this.send(result.data.data);
-          this.loading = false
+          if(result.data.code == 0){
+            this.send(result.data.data);
+            this.loading = false
+          }else {
+            this.$toast(result.data.msg)
+              this.loading=false
+          }
         })
         .catch(err => {
           this.loading=false
@@ -600,6 +603,7 @@ export default {
         is_tourist: this.userInfo.data.is_tourist,
          customer_area:this.userIp.adress,
       };
+      console.log(params,333)
       this.$socket.emit("enter", params);
     },
     submit(index, val) {

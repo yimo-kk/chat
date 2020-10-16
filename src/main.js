@@ -55,8 +55,8 @@ import "@/assets/css/common.css";
 import "./assets/iconfont/iconfont.css";
 import "vant/lib/index.css";
 // 移动端调试
-// import Vconsole from "vconsole";
-// let vConsole = new Vconsole();
+import Vconsole from "vconsole";
+let vConsole = new Vconsole();
 // vant
 import {
   Field,

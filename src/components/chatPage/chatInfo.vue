@@ -45,9 +45,10 @@
           <img class="head_portrait" :src="item.from_avatar" alt />
           <div style="margin: 0 10px;" class="chat_content_text_left">
             <span v-if="name" style="font-size: 12px;color:#ccc">{{item.from_name}}</span>
-            <span v-if="item.type=== 0" class="content left">{{item.content || item.message }}</span>
+            <span style="white-space: pre-line" v-if="item.type=== 0" class="content left">{{item.content || item.message }}</span>
             <p v-else-if="item.type=== 1" class="content left" style="padding:4px">
               <img
+                @load='loadImg' 
                 @click="imageView(index,item.content||item.message)"
                 class="send_img send_img_left"
                 :src="item.content ||  item.message"
@@ -137,9 +138,10 @@
         <div class="record record_right" v-else-if="item.from_name == username&&!item.kefu_name ">
           <div style="margin: 0 10px;" class="chat_content_text_right">
             <p v-if="name" style="text-align: end;font-size: 12px;color:#ccc">{{username}}</p>
-            <span v-if="item.type=== 0" class="content right">{{item.message || item.content}}</span>
+            <span style="white-space: pre-line" v-if="item.type=== 0" class="content right">{{item.message || item.content}}</span>
             <p v-else-if="item.type=== 1" class="content right" style="padding:4px">
               <img
+              @load='loadImg' 
                 @click="imageView(index,item.content||item.message)"
                 class="send_img send_img_right"
                 :src="item.content ||  item.message"
@@ -210,6 +212,8 @@
 <script>
 import { mapState } from "vuex";
 import { ImagePreview } from "vant";
+import Axios from "axios";
+import qs from "qs";
 // import { screenSize } from "@/libs/utils.js";
 import Audio from "@/components/chatPage/audio.vue";
 export default {
@@ -288,10 +292,12 @@ export default {
     messageDown() {
       let that = this;
       this.$nextTick(() => {
-        setTimeout(() => {
           that.$refs.chatInfo.scrollTop = that.$refs.chatInfo.scrollHeight;
-        }, 200);
       });
+    },
+    // 图片显示延迟显示
+    loadImg(){
+     this.messageDown()
     },
     // 查看图片
     imageView(index, data) {
@@ -314,17 +320,32 @@ export default {
     // 下载文件
     downloadFile(content, fileName) {
       try {
-        let aLink = document.createElement("a");
-        let evt = document.createEvent("HTMLEvents");
-        evt.initEvent("click", true, true); //initEvent 不加后两个参数在FF下会报错  事件类型，是否冒泡，是否阻止浏览器的默认行为
-        if (typeof content !== "string") {
-          aLink.href = content.src;
-          aLink.download = content.filename;
-        } else {
-          aLink.href = content;
-          aLink.download = fileName;
-        }
-        aLink.click();
+        let dUrl;
+        typeof content == "string"? dUrl= content:dUrl= content.src
+         if( dUrl.split('.').pop() === 'pdf'|| dUrl.split('.').pop() ==='txt'){
+            var request = new XMLHttpRequest();
+            request.responseType = "blob";
+            request.open("GET", dUrl,true);
+            request.onload = function(e) {
+                var url = window.URL.createObjectURL(request.response);
+                var a = document.createElement("a");
+                document.body.appendChild(a);
+                a.href = url;
+                a.download = fileName
+                a.click();
+            }
+            request.send();
+         }else {
+          let aLink = document.createElement("a");
+          let evt = document.createEvent("HTMLEvents");
+          evt.initEvent("click", true, true); //initEvent 不加后两个参数在FF下会报错  事件类型，是否冒泡，是否阻止浏览器的默认行为
+            aLink.href = dUrl;
+            aLink.download = fileName;
+          
+          aLink.click();
+         }
+        
+
       } catch (error) {
         this.$toast("文件已过期！");
       }

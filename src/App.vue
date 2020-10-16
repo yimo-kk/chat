@@ -20,6 +20,10 @@ export default {
      that.$store.commit('closeTitleScrolling','妮姬客服')
       this.$store.commit('setNum',0)
   })
+  document.addEventListener('touchstart',()=>{
+     that.$store.commit('closeTitleScrolling','妮姬客服')
+      this.$store.commit('setNum',0)
+  })
   }
 };
 </script>

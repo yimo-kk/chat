@@ -210,7 +210,6 @@ export default {
         state: false,
         message: ""
       },
-      num:0
     };
   },
   computed: {
@@ -227,8 +226,9 @@ export default {
     // 收到群消息
     groupMsg(data) {
       if(this.username !== data.from_name) {
-        this.num ++
-      this.$store.commit('setTitle',this.num)
+       let num = this.$store.state.num
+      this.$store.commit('setNum',++num)
+      this.$store.commit('setTitle',num)
       this.$store.commit('closeTitleScrolling')
       this.$store.dispatch('playPromptVuex')
       this.$store.commit('titleScrolling')

@@ -9,13 +9,13 @@ export function compressImage(file, success, error) {
     const img = new Image();
     img.src = src;
     // 图片小于1M不压缩
-    if (file.size < Math.pow(1024, 2)) {
+    if (file.size < Math.pow(500, 2)) {
       return success(src, file);
     }
     img.onload = () => {
       const w = img.width;
       const h = img.height;
-      const quality = 0.7; // 默认图片质量为0.92
+      const quality = 0.5; // 默认图片质量为0.92
       // 生成canvas
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
