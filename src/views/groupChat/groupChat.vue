@@ -281,6 +281,14 @@ export default {
     removeforbid(data) {
       data.kefu_name = "kefu";
       this.messages.push(data);
+    },
+    // 加入聊天室
+    userJoin(data){
+      this.groupAddOrLeave(data,'add')
+    },
+    // 离开聊天室
+    userLeave(data){
+        this.groupAddOrLeave(data,'leave')
     }
   },
   methods: {
@@ -533,7 +541,8 @@ export default {
           .then(() => {
             this.$socket.emit("group", {
               username: this.username,
-              group_id: this.gid
+              group_id: this.gid,
+              seller_code:this.userInfo.seller.seller_code
             });
             this.getGroupChatLog();
           })
@@ -544,7 +553,8 @@ export default {
       } else {
         this.$socket.emit("group", {
           username: this.username,
-          group_id: this.gid
+          group_id: this.gid,
+          seller_code:this.userInfo.seller.seller_code
         });
         this.getGroupChatLog();
       }
@@ -580,7 +590,6 @@ export default {
           this.$toast("请求超时！");
         });
     },
-
     getNewsData(seller_code) {
       getNews({ seller_code })
         .then(result => {
@@ -593,7 +602,23 @@ export default {
         .catch(err => {
           this.$toast("请求超时！");
         });
-    }
+    },
+    groupAddOrLeave(data,opt){
+      if(Object.keys(this.groupMember).length && data.group_id == this.gid){
+       if( opt=== 'add' ){
+          this.groupMember.num += 1
+          this.groupMember.data.push(data.username)
+       }else if(opt=== 'leave' ){
+         this.groupMember.num -= 1
+         var index = this.groupMember.data.indexOf(data.username); 
+          if (index > -1) { 
+          this.groupMember.data.splice(index, 1); 
+          } 
+       }
+           
+      }
+    },
+   
   },
   created() {
     this.gid != this.$route.query.group_id &&
