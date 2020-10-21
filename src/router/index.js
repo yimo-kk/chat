@@ -17,19 +17,12 @@ const routes = [
   //   component: () =>
   //     import(/* webpackChunkName: "chatList" */ "../views/chatList/chatList.vue")
   // },
-  // {
-  //   path: "/test",
-  //   name: "Test",
-  //   component: () =>
-  //     import(/* webpackChunkName: "chatList" */ "../views/test/index.vue")
-  // },
   {
     path: "/groupChat",
     name: "GroupChat",
     component: () =>
       import(/* webpackChunkName: "groupChat" */ "../views/groupChat/groupChat.vue")
-  }
-  ,
+  },
   {
     path: "/privateChat",
     name: "PrivateChat",

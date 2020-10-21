@@ -1,5 +1,5 @@
 <template>
-  <div class="chat_info" ref="chatInfo">
+  <div :class=" ['chat_info',Object.keys(announcement).length > 0?'activity_contentTop': 'contentTop']" ref="chatInfo">
     <div class="who_chat">
       <div class="chat_title">
         <p class="go_back">
@@ -31,7 +31,7 @@
       />
     </div>
     <div
-      :class="['chat_content',Object.keys(announcement).length > 0?'activity_contentTop': 'contentTop']"
+      :class="['chat_content']"
       ref="chatContent"
     >
       <div class="flex_center prompt" v-if="isPrompt">

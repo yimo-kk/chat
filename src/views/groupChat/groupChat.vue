@@ -3,7 +3,7 @@
     <div v-show = loading class='loading_box'>
       <van-loading size="45" class='loading' color='#02c0fe' />
     </div>
-    <div class="chat_serve w" @click="allClick">
+    <div class="chat_serve w" >
       <div class="chat_box">
         <!-- 消息展示  11111 -->
         <ChatInfo
@@ -57,16 +57,16 @@
                 @click="record"
               ></van-icon>-->
             </div>
-            <div
+            <!-- <div
               class="record flex_center"
               @touchstart="startRecord"
               @touchmove="slideRecord"
-              @touchend="endRecord"
+              @touchend="endRecord" 
               v-if="isAudio"
             >
               {{ btnText }}
-            </div>
-            <div class="send_text" v-else>
+            </div> -->
+            <div class="send_text" >
               <textarea
                 v-model.trim="sendText"
                 placeholder="请输入内容..."
@@ -122,7 +122,7 @@
                 :key="index"
                 @click.stop="getBrow(index)"
               >
-                {{ item }}
+                {{ item.char }}
               </li>
             </ul>
           </div>
@@ -135,14 +135,14 @@
         :groupMemberList="groupMember.data"
       ></pcChatList>
       <!-- 录音图像 -->
-      <div class="record_mask" v-show="isMask">
+      <!-- <div class="record_mask" v-show="isMask">
         <div class="record_pic">
           <canvas id="canvas"></canvas>
           <p class="cancel">上滑 取消发送</p>
         </div>
-      </div>
+      </div> -->
       <!-- 播放录音 -->
-      <audio ref="audio" @ended="playEnd" style="display: none;"></audio>
+      <!-- <audio ref="audio" @ended="playEnd" style="display: none;"></audio> -->
     </div>
     <div v-if="isGroupUser.state" class="is_group_user">
       <p class="is_group_user_msg">{{ isGroupUser.message }}</p>
@@ -154,7 +154,7 @@
 import { mapState } from "vuex";
 import pcChatList from "@/components/pcChatList/pcChatList.vue";
 import ChatInfo from "@/components/chatPage/chatInfo.vue";
-// import common from "@/mixins/common";
+import common from "@/mixins/common";
 import {
   getGroupChatLog,
   sendGroupChatFile,
@@ -167,17 +167,9 @@ import {
   conversion,
   conversionFace
 } from "@/libs/utils.js";
-const lamejs = require("lamejs");
-const appData = require("@/assets/emojis.json");
-// import Recorder from "js-audio-recorder";
-// const recorder = new Recorder({
-//   sampleBits: 8, // 采样位数，支持 8 或 16，默认是16
-//   sampleRate: 11025, // 采样率，支持 11025、16000、22050、24000、44100、48000，根据浏览器默认值，我的chrome是48000
-//   numChannels: 1 // 声道，支持 1 或 2， 默认是1e
-// });
 export default {
   name: "groupChat",
-  // mixins: [common()],
+  mixins: [common()],
   components: {
     pcChatList,
     ChatInfo
@@ -185,26 +177,13 @@ export default {
   data() {
     return {
       loading:false,
-      sendText: "",
-      faceShow: false,
       messages: [],
       Pcrecord: false,
       sendType: null,
-      isAudio: false,
-      isMask: false, // 录音时的波浪
-      faceList: [],
-      drawRecordId: null,
-      oCanvas: null,
-      ctx: null,
-      currentIndex: null, //当前播放的
-      btnText: "按住 说话",
-      posStart: 0, //初始化起点坐标
-      posEnd: 0, //初始化终点坐标
-      posMove: 0, //初始化滑动坐标
+      // isMask: false, // 录音时的波浪
+      // btnText: "按住 说话",
       chatTitle: "",
       groupMember: {},
-      screenWidth: document.body.offsetWidth,
-      isButtom: document.body.offsetWidth < 540,
       announcement: {},
       isGroupUser: {
         state: false,
@@ -214,11 +193,6 @@ export default {
   },
   computed: {
     ...mapState(["userInfo", "code", "gid", "username", "userIp"])
-  },
-  watch: {
-    screenWidth(val) {
-      val < 540 ? (this.isButtom = true) : (this.isButtom = false);
-    }
   },
   sockets: {
     // connect:查看socket是否渲染成功
@@ -292,17 +266,6 @@ export default {
     }
   },
   methods: {
-    enter(event) {
-      if (event.keyCode === 13) {
-        this.sendType = 0;
-        event.preventDefault(); // 阻止浏览器默认换行操作
-        this.send(this.sendText);
-      }
-    },
-    textSend() {
-      this.sendType = 0;
-      this.send(this.sendText);
-    },
     // 发送消息
     send(data) {
       if (!this.sendText.length && this.sendType === 0) return;
@@ -325,30 +288,6 @@ export default {
       this.sendText = "";
       this.faceShow = false;
     },
-    allClick() {
-      this.faceShow = false;
-    },
-    // 上传文件
-    uploadeFile(file) {
-      this.sendType = 2;
-      const formdata = new FormData();
-      formdata.append("filedata", file.file);
-      formdata.append("filename", file.file.name);
-      formdata.append("group_id", this.gid);
-      formdata.append("from_id", this.userInfo.data.uid);
-      sendGroupChatFile(formdata)
-        .then(result => {
-          if (result.data.code === 0) {
-            this.send(result.data.data);
-          } else {
-            this.$toast(esult.data.msg);
-          }
-        })
-        .catch(err => {
-          console.log(err);
-          this.$toast(err.msg);
-        });
-    },
     // 获取图片
     uploadeImg(file) {
       this.sendType = 1;
@@ -369,124 +308,6 @@ export default {
           }
         );
       }
-    },
-    /**
-     * 群聊暂时不展示语音
-     */
-    // 点击录音图标
-    record() {
-      this.sendType = 3;
-      Recorder.getPermission()
-        .then(
-          () => {
-            if (this.isButtom) {
-              this.isAudio = !this.isAudio;
-            } else {
-              this.Pcrecord = !this.Pcrecord;
-              this.startRecorder();
-            }
-          },
-          error => {
-            this.$toast("暂不录音！");
-          }
-        )
-        .catch(err => {
-          console.log(err);
-          this.$toast(err.msg);
-        });
-      // if (!this.isButtom) {
-      //   this.isAudio = !this.isAudio;
-      // } else {
-      //   this.Pcrecord = !this.Pcrecord;
-      //   this.startRecorder();
-      // }
-    },
-    // 录音
-    startRecord(event) {
-      event.preventDefault(); //阻止浏览器默认行为
-      this.posStart = 0;
-      this.posStart = event.touches[0].pageY; //获取起点坐标
-      this.btnText = "松开 结束";
-      this.isMask = true;
-      this.startRecorder();
-    },
-    // 上滑取消
-    slideRecord(event) {
-      event.preventDefault(); //阻止浏览器默认行为
-      this.posMove = 0;
-      this.posMove = event.targetTouches[0].pageY; //获取滑动实时坐标
-      if (this.posStart - this.posMove < 100) {
-        this.btnText = "松开 结束";
-      } else {
-        this.btnText = "松开手指，取消发送";
-      }
-    },
-    // 结束录音
-    endRecord(event) {
-      event.preventDefault();
-      this.posEnd = 0;
-      this.posEnd = event.changedTouches[0].pageY; //获取终点坐标
-      this.btnText = "按住 说话";
-      if (this.posStart - this.posEnd < 100) {
-        this.stopRecorder();
-      } else {
-        recorder.stop();
-      }
-      this.isMask = false;
-    },
-    // 开始录音
-    startRecorder() {
-      recorder
-        .start()
-        .then(
-          () => {
-            this.drawRecord(); //开始绘制图片
-          },
-          error => {
-            // 出错了
-            this.isMask = false;
-            this.$toast("当前环境不支持语音");
-          }
-        )
-        .catch(err => {
-          console.log(err);
-          this.$toast(err.msg);
-        });
-    },
-    // 结束录音
-    stopRecorder() {
-      this.Pcrecord = false;
-      recorder.stop();
-      this.drawRecordId && cancelAnimationFrame(this.drawRecordId);
-      this.drawRecordId = null;
-      if (recorder.duration < 1) {
-        this.$toast("说话时间太短了");
-        return;
-      }
-      let dataMp3 = recorder.getWAVBlob();
-      var fileName = new Date().valueOf() + "." + "wav";
-      const formdata = new FormData();
-      formdata.append("name", fileName);
-      formdata.append("file", dataMp3);
-      uploadVoice({
-        params: formdata,
-        seller_code: this.userInfo.seller.seller_code
-      })
-        .then(result => {
-          let data = result.data.data;
-          data.duration = Math.round(recorder.duration);
-          this.send(data);
-        })
-        .catch(err => {
-          this.$toast("发送失败");
-        });
-    },
-    playEnd() {
-      this.messages.forEach(item => {
-        if (item.type == 3) {
-          item.message ? (item.message.play = false) : (item.play = false);
-        }
-      });
     },
     // 获取群聊记录
     getGroupChatLog() {
@@ -520,63 +341,6 @@ export default {
           this.loading = false
           this.$toast(err.msg);
         });
-    },
-    // 判断本地是否有用户信息
-    getUserInfo() {
-      if (
-        Object.keys(this.userInfo) <= 0 ||
-        this.$route.query.username !== this.username
-      ) {
-        this.loading = true
-        this.$store
-          .dispatch("getUsersData", {
-            code: this.$route.query.code,
-            login_ip: this.userIp.ip,
-            area: this.userIp.adress,
-            username: this.$route.query.username
-              ? this.$route.query.username
-              : this.username,
-            is_tourist: this.$route.query.username ? 2 : 0
-          })
-          .then(() => {
-            this.$socket.emit("group", {
-              username: this.username,
-              group_id: this.gid,
-              seller_code:this.userInfo.seller.seller_code
-            });
-            this.getGroupChatLog();
-          })
-          .catch(err => {
-              this.loading = false
-            this.$toast(err.msg);
-          });
-      } else {
-        this.$socket.emit("group", {
-          username: this.username,
-          group_id: this.gid,
-          seller_code:this.userInfo.seller.seller_code
-        });
-        this.getGroupChatLog();
-      }
-    },
-    faceContent() {
-      this.faceShow = !this.faceShow;
-      if (this.faceShow == true) {
-        for (let i in appData) {
-          this.faceList.push(appData[i].char);
-        }
-      } else {
-        this.faceList = [];
-      }
-    },
-    // 获取用户点击之后的表情标签 ，存放到输入框内
-    getBrow(index) {
-      for (let i in this.faceList) {
-        if (index == i) {
-          this.getBrowString = this.faceList[index];
-          this.sendText += this.getBrowString;
-        }
-      }
     },
     // pc端右边tab点击
     activtTab() {},
@@ -618,21 +382,22 @@ export default {
            
       }
     },
-   
   },
   created() {
     this.gid != this.$route.query.group_id &&
       this.$store.commit("setGroupId", this.$route.query.group_id);
-    this.code != this.$route.query.code &&
-      this.$store.commit("setCode", this.$route.query.code);
   },
   mounted() {
     this.$socket.emit("connect");
     let that = this;
-    window.addEventListener("resize", function() {
-      that.screenWidth = document.body.offsetWidth;
+    this.getUserInfo(()=>{
+        this.$socket.emit("group", {
+          username: this.username,
+          group_id: this.gid,
+          seller_code:this.userInfo.seller.seller_code
+        });
+        this.getGroupChatLog();
     });
-    this.getUserInfo();
   }
 };
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="chat_serve w" @click="allClick">
+  <div id="click_head_portrait" class="chat_serve w" >
     <div v-show = loading class='loading_box'>
       <van-loading size="45" class='loading' color='#02c0fe' />
     </div>
@@ -23,34 +23,43 @@
           <div class="handle_other">
             <van-icon
               class="iconfont faceShow font_size"
-              size="28px"
+              size="1.6rem"
               class-prefix="icon"
               slot="right-icon"
               name="buoumaotubiao49"
               @click.stop="faceContent"
             ></van-icon>
             <van-uploader :after-read="uploadeFile" accept="application/*">
-              <van-icon class="iconfont font_size" size="30px" class-prefix="icon" name="wenjian1"></van-icon>
+              <van-icon class="iconfont font_size" size="1.8rem" class-prefix="icon" name="wenjian1"></van-icon>
             </van-uploader>
             <van-uploader
               :after-read="uploadeImg"
               accept="image/png, image/gif, image/jpg, image/webp, image/jpeg"
             >
-              <van-icon class="iconfont font_size" size="30px" class-prefix="icon" name="tupian"></van-icon>
+              <van-icon class="iconfont font_size" size="1.8rem" class-prefix="icon" name="tupian"></van-icon>
             </van-uploader>
             <van-icon v-if="isIE"
               class="iconfont font_size"
-              size="30px"
+              size="1.8rem"
               class-prefix="icon"
               name="yuyin"
               @click="record"
             ></van-icon>
+            <!-- <van-icon v-else
+              class="iconfont font_size"
+              size="1.8rem"
+              class-prefix="icon"
+              name="icon-jianpan"
+              @click="record"
+            ></van-icon> -->
+            
           </div>
+        
           <div
             class="record flex_center"
             @touchstart="startRecord"
-            @touchmove="slideRecord"
-            @touchend="endRecord"
+            @touchend="endRecord" 
+             @touchmove="slideRecord"
             v-if="isAudio"
           >{{btnText}}</div>
           <div class="send_text" v-else>
@@ -136,7 +145,7 @@ import {
 import { ImagePreview } from "vant";
 import PcChatList from "@/components/pcChatList/pcChatList.vue";
 import ChatInfo from "@/components/chatPage/chatInfo.vue";
-// import common from "@/mixins/common";
+import common from "@/mixins/common";
 import {
   compressImage,
   isImage,
@@ -147,22 +156,18 @@ import {
   conversionFace,
   isIE
 } from "@/libs/utils.js";
-const lamejs = require("lamejs");
-const appData = require("@/assets/emojis.json");
 import Recorder from "js-audio-recorder";
 let recorder
 if(!isIE()){
     recorder = new Recorder({
     sampleBits: 8, // 采样位数，支持 8 或 16，默认是16
-    sampleRate: 11025, // 采样率，支持 11025、16000、22050、24000、44100、48000，根据浏览器默认值，我的chrome是48000
+    sampleRate: 22050, // 采样率，支持 11025、16000、22050、24000、44100、48000，根据浏览器默认值，我的chrome是48000
     numChannels: 1 // 声道，支持 1 或 2， 默认是1e
   });
 }
-
-
 export default {
   name: "ChatPage",
-  // mixins: [common()],
+  mixins: [common()],
   components: {
     PcChatList,
     ChatInfo
@@ -171,12 +176,8 @@ export default {
     return {
       loading:false,
       messages: [],
-      sendText: "",
       activateId: 1,
       list: [],
-      faceShow: false,
-      faceList: [],
-      getBrowString: "",
       isAudio: false, // 录音时的波浪
       drawRecordId: null,
       oCanvas: null,
@@ -192,17 +193,15 @@ export default {
       isLoading: false,
       chatUser: "官方客服",
       isPrompt: true,
-      screenWidth: document.body.offsetWidth,
-      isButtom: document.body.offsetWidth < 540,
       profilePhoto: 'https://service.nikidigital.net/static/common/images/kefu.png',
       questionList: [],
-     
+      outTime:false
     };
   },
   watch: {
-    screenWidth(val) {
-      val < 540 ? (this.isButtom = true) : (this.isButtom = false);
-    },
+    isButtom(newVal){
+      !newVal &&  this.getQuestion(this.userInfo.seller.seller_code);
+    }
   },
   sockets: {
     // connect:查看socket是否渲染成功
@@ -226,7 +225,6 @@ export default {
       this.$store.commit('closeTitleScrolling')
       this.$store.dispatch('playPromptVuex')
       this.$store.commit('titleScrolling')
-      // this.TitleScrolling()
       data.type === 3 && (data.message.play = false);
       data.type === 0 &&
         (data.message = conversionFace(data.content || data.message));
@@ -248,24 +246,8 @@ export default {
      }
   },
   methods: { 
-    
-    enter(event) {
-       if (event.keyCode === 13 && event.ctrlKey ||event.altKey) {
-        this.sendText +='\n'
-      }else if(event.keyCode === 13 &&event.shiftKey){
-        // shitt+回车自带换行
-      }else if (event.keyCode === 13 && !this.isButtom) {
-        this.sendType = 0;
-        event.preventDefault();
-        this.send(this.sendText);
-      }
-    },
-    textSend() {
-      this.sendType = 0;
-      this.send(this.sendText);
-    },
-    // 发送消息
-    send(data) {
+    // 发送消息 
+    send(data) { 
       if (!this.sendText.length && this.sendType === 0) return;
       let my_send = {
         cmd: "user-service",
@@ -285,27 +267,6 @@ export default {
       this.$socket.emit("message", sendMessage);
       this.sendText = "";
       this.faceShow = false;
-    },
-    faceContent() {
-      this.faceShow = !this.faceShow;
-      if (this.faceShow == true) {
-        for (let i in appData) {
-          appData[i].name = i;
-          this.faceList.push(appData[i]);
-        }
-      } else {
-        this.faceList = [];
-      }
-    },
-    // 获取用户点击之后的标签 ，存放到输入框内
-    getBrow(index) {
-      for (let i in this.faceList) {
-        if (index == i) {
-          this.getBrowString = this.faceList[index].char;
-          this.sendText += this.getBrowString;
-          // this.faceList.push(this.faceList[index])
-        }
-      }
     },
     // 上传文件
     uploadeFile(file) {
@@ -392,28 +353,30 @@ export default {
     },
     // 结束录音
     endRecord(event) {
+      if(this.outTime)return
       event.preventDefault();
       this.posEnd = 0;
       this.posEnd = event.changedTouches[0].pageY; //获取终点坐标
       this.btnText = "按住 说话";
+      this.isMask = false;
       if (this.posStart - this.posEnd < 100) {
-        this.stopRecorder();
+        this.stopRecorder()
       } else {
         recorder.stop();
       }
-      this.isMask = false;
-    },
-    allClick() {
-      this.faceShow = false;
+ 
     },
     // 录音时的波浪
     startCanvas() {
       //录音波浪
       this.oCanvas = document.getElementById("canvas");
+      this.oCanvas.style.width = 70+'vw'
+      this.oCanvas.style.borderRadius = 6+'px'
       this.ctx = this.oCanvas.getContext("2d");
     },
     // 开始录音
     startRecorder() {
+      let that = this
       recorder.start().then(
         () => {
           this.drawRecord(); //开始绘制图片
@@ -426,6 +389,14 @@ export default {
           this.Pcrecord = false;
         }
       );
+      recorder.onprogress = function(params) {
+        if(params.duration>=5){
+          that.stopRecorder()
+          that.btnText = "按住 说话";
+          that.isMask = false;
+          that.outTime=true
+        }
+    } 
     },
     // 结束录音
     stopRecorder() {
@@ -444,6 +415,7 @@ export default {
       formdata.append("name", fileName);
       formdata.append("file", dataMp3);
       this.loading=true
+      this.outTime =false
       uploadVoice({
         params: formdata,
         seller_code: this.userInfo.seller.seller_code
@@ -569,34 +541,6 @@ export default {
            this.$toast(err.msg)
         });
     },
-    // 判断本地是否有用户信息
-    getUserInfo(callback) {
-      if (
-        Object.keys(this.userInfo) <= 0 ||
-        this.$route.query.username !== this.userInfo.data.username
-      ) {
-        let params = {
-          code: this.$route.query.code,
-            login_ip:this.userIp.ip,
-            area:this.userIp.adress,
-          username: this.$route.query.username
-            ? this.$route.query.username
-            : this.username,
-            is_tourist:this.$route.query.username ? 2 : 0
-        };
-        this.loading = true
-        this.$store.dispatch("getUsersData", params)
-        .then(() => {
-          callback();
-        })
-        .catch(err=>{
-          this.loading = false
-          this.$toast(err.msg)
-        })
-      } else {
-        callback();
-      }
-    },
     // 发送接待
     reception() {
       let params = {
@@ -608,7 +552,6 @@ export default {
         is_tourist: this.userInfo.data.is_tourist,
          customer_area:this.userIp.adress,
       };
-      console.log(params,333)
       this.$socket.emit("enter", params);
     },
     submit(index, val) {
@@ -701,13 +644,8 @@ export default {
         }
       });
     this.startCanvas();
-    let that = this;
-    window.addEventListener("resize", function() {
-      that.screenWidth = document.body.offsetWidth;
-    });
   },
   created() {
-    this.$store.commit("setCode", this.$route.query.code);
   }
 };
 </script>
