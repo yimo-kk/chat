@@ -13,7 +13,7 @@
           :isPrompt="false"
           :isPerson="true"
           :name="true"
-          :groupNum="groupMember.num"
+          :groupNum="groupMember.num" 
           :announcement="announcement"
         ></ChatInfo>
         <!-- 聊天输入框 -->
@@ -43,7 +43,7 @@
               >
                 <van-icon
                   class="iconfont font_size"
-                  size="30px"
+                  size="1.8rem"
                   class-prefix="icon"
                   name="tupian"
                 ></van-icon>
@@ -86,7 +86,7 @@
                   @keydown="enter"
                   v-model.trim="sendText"
                   rows="1"
-                  :autosize="{ maxHeight: 25, minHeight: 20 }"
+                  :autosize="{ maxHeight: 48, minHeight: 24 }"
                   type="textarea"
                   placeholder="请输入内容..."
                 >
@@ -145,7 +145,7 @@
       <!-- <audio ref="audio" @ended="playEnd" style="display: none;"></audio> -->
     </div>
     <div v-if="isGroupUser.state" class="is_group_user">
-      <p class="is_group_user_msg">{{ isGroupUser.message }}</p>
+      <p class="is_group_user_msg">{{ isGroupUser.message ||isGroupUser.msg}}</p>
     </div>
   </div>
 </template>
@@ -159,7 +159,6 @@ import {
   getGroupChatLog,
   sendGroupChatFile,
   getGroupList,
-  getNews
 } from "@/api/chat.js";
 import {
   compressImage,
@@ -184,7 +183,6 @@ export default {
       // btnText: "按住 说话",
       chatTitle: "",
       groupMember: {},
-      announcement: {},
       isGroupUser: {
         state: false,
         message: ""
@@ -304,7 +302,7 @@ export default {
           },
           error => {
             // 压缩出错
-            console.log(error);
+            this.$toast('发送失败！')
           }
         );
       }
@@ -349,19 +347,6 @@ export default {
       getGroupList({ group_id })
         .then(result => {
           this.groupMember = result.data;
-        })
-        .catch(err => {
-          this.$toast("请求超时！");
-        });
-    },
-    getNewsData(seller_code) {
-      getNews({ seller_code })
-        .then(result => {
-          if (result.data.code === 0) {
-            if(!Array.isArray(result.data.data)){
-              this.announcement = result.data.data;
-            }
-          }
         })
         .catch(err => {
           this.$toast("请求超时！");

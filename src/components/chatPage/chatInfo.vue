@@ -28,7 +28,7 @@
         color="#7fb9f3"
         scrollable
         :text="announcement.content"
-      />
+      /> 
     </div>
     <div
       :class="['chat_content']"
@@ -187,7 +187,7 @@
           <img class="head_portrait" :src="item.from_avatar" alt />
         </div>
         <div v-if="item.kefu_name ==='kefu'" class="flex_center" style="marginBottom:10px">
-          <p style="color:#ccc">{{item.message}}</p>
+          <p style="color:#ccc;fontSize:0.8rem">{{item.message}}</p>
         </div>
       </div>
     </div>
@@ -214,7 +214,6 @@ import { mapState } from "vuex";
 import { ImagePreview } from "vant";
 import Axios from "axios";
 import qs from "qs";
-// import { screenSize } from "@/libs/utils.js";
 import Audio from "@/components/chatPage/audio.vue";
 export default {
   name: "ChatInfo",
@@ -347,7 +346,6 @@ export default {
         
 
       } catch (error) {
-        console.log(error)
         this.$toast("文件已过期！");
       }
     },

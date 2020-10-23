@@ -14,6 +14,7 @@
         @submit="submit"
         @pcCancel="pcCancel"
         @getApicontent="getApicontent"
+        :announcement="announcement"
         :name="false"
         :isPrompt="isPrompt"
       ></ChatInfo>
@@ -81,7 +82,7 @@
                 @keydown="enter"
                 v-model.trim="sendText"
                 rows="1"
-                :autosize=" { maxHeight: 25, minHeight: 20 }"
+                :autosize=" { maxHeight: 48, minHeight: 24 }"
                 type="textarea"
                 placeholder="请输入内容..."
               >
@@ -129,6 +130,10 @@
     </div>
     <!-- 播放录音 -->
     <audio ref="audio" @ended="playEnd" style="display: none;"></audio>
+    <!-- code 不存在 -->
+     <div v-if="isGroupUser.state" class="is_group_user">
+      <p class="is_group_user_msg">{{ isGroupUser.message|| isGroupUser.msg }}</p>
+    </div>
   </div>
 </template>
 <script>
@@ -195,7 +200,11 @@ export default {
       isPrompt: true,
       profilePhoto: 'https://service.nikidigital.net/static/common/images/kefu.png',
       questionList: [],
-      outTime:false
+      outTime:false,
+       isGroupUser: {
+        state: false,
+        message: ""
+      },
     };
   },
   watch: {
@@ -258,6 +267,8 @@ export default {
         from_name: this.userInfo.data.username,
         seller_code: this.userInfo.seller.seller_code,
         type: this.sendType,
+        from_area: this.userIp.address,
+        from_ip: this.userIp.ip
       };
       let sendMessage = JSON.parse(JSON.stringify(my_send));
       this.sendType === 3 && (my_send.message.play = false);
@@ -305,7 +316,7 @@ export default {
           },
           error => {
             // 压缩出错
-            console.log(error);
+           this.$toast('发送失败！')
           }
         );
       }
@@ -390,7 +401,7 @@ export default {
         }
       );
       recorder.onprogress = function(params) {
-        if(params.duration>=5){
+        if(params.duration>=59.5){
           that.stopRecorder()
           that.btnText = "按住 说话";
           that.isMask = false;
@@ -522,9 +533,10 @@ export default {
       getServiceChatLog({
         username: this.userInfo.data.username,
         seller_code: this.userInfo.seller.seller_code
-      })
+      }) 
         .then(result => {
           this.loading = false
+          this.getNewsData(this.userInfo.seller.seller_code);
           this.messages = result.data.data.map(item => {
             item.type == 3 && (item.play = false);
             if (item.type == 0) {
@@ -545,12 +557,12 @@ export default {
     reception() {
       let params = {
         customer_id: this.userInfo.data ? this.userInfo.data.uid : "",
-        customer_ip: this.userInfo.data.ip,
+        customer_ip: this.userIp.ip,
         customer_name: this.username,
         seller_code: this.userInfo.seller.seller_code,
         customer_avatar: this.userInfo.data.headimg,
         is_tourist: this.userInfo.data.is_tourist,
-         customer_area:this.userIp.adress,
+         customer_area:this.userIp.address,
       };
       this.$socket.emit("enter", params);
     },
@@ -573,7 +585,7 @@ export default {
           }
         })
         .catch(err => {
-          console.log(err);
+          this.$toast('评价失败！')
         });
     },
     // pc 右边切换tab
@@ -631,7 +643,6 @@ export default {
         })
         .catch(err => {});
     },
-    
   },
   mounted() {
     // this.$socket.emit('connect')
@@ -653,5 +664,25 @@ export default {
 .textarea {
   border: 1px solid #222;
   height: 100px;
+}
+.is_group_user {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.6);
+  top: 0;
+  left: 0;
+  z-index: 5555;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .is_group_user_msg {
+    background-color: #fff;
+    width: 180px;
+    height: 55px;
+    border-radius: 10px;
+    text-align: center;
+    line-height: 55px;
+  }
 }
 </style>

@@ -1,3 +1,6 @@
+import {
+  getNews
+} from "@/api/chat.js";
 const appData = require("@/assets/emojis.json");
 export default function() {
   return {
@@ -9,6 +12,7 @@ export default function() {
         sendText: "",
         screenWidth: document.body.offsetWidth,
         isButtom: document.body.offsetWidth < 540,
+        announcement:{}
       };
     },
     watch: {
@@ -19,37 +23,51 @@ export default function() {
             this.isButtom = false
           }
         },
+        sendText(newVal){
+          if (newVal.length >= 1024) {
+             this.sendText = newVal.slice(0, 10);
+           }
+        },
       },
     methods: {
         getUserInfo(callback) {
-            let bool
-               if(this.$route.query.username && Object.keys(this.userInfo).length > 0 ){
-                bool= this.$route.query.username !== this.userInfo.data.username
-            }else {
-              bool=Object.keys(this.userInfo).length <= 0
-            }
-          if (bool ) {
+            // let bool
+            //    if(this.$route.query.username && Object.keys(this.userInfo).length > 0 ){
+            //     bool= this.$route.query.username !== this.userInfo.data.username
+            // }else {
+            //   bool=Object.keys(this.userInfo).length <= 0
+            // }
+          // if (bool ) {
             this.loading = true
+            let params ={
+              login_ip: this.userIp.ip,
+              area: this.userIp.address,
+              username: this.$route.query.username
+                ? this.$route.query.username
+                : this.username,
+              is_tourist: this.$route.query.username ? 2 : 0
+            }
+            if(this.$route.query.code){
+              params.code= this.$route.query.code
+            }
             this.$store
-              .dispatch("getUsersData", {
-                code: this.$route.query.code,
-                login_ip: this.userIp.ip,
-                area: this.userIp.adress,
-                username: this.$route.query.username
-                  ? this.$route.query.username
-                  : this.username,
-                is_tourist: this.$route.query.username ? 2 : 0
-              })
-              .then(() => {
-                  callback()
+              .dispatch("getUsersData",params )
+              .then((res) => {
+               if(res.code === 2 || res.code === 6){
+                 res.state = true
+                 this.isGroupUser = res
+                 this.loading = false
+                return
+               }
+                callback()
               })
               .catch(err => {
                   this.loading = false
                 this.$toast(err.msg);
               });
-          } else {
-            callback()
-          }
+          // } else {
+          //   callback()
+          // }
         },
         enter(event) {
             if (event.keyCode === 13 && event.ctrlKey ||event.altKey) {
@@ -83,6 +101,19 @@ export default function() {
         textSend() {
             this.sendType = 0;
             this.send(this.sendText);
+        },
+        getNewsData(seller_code) {
+          getNews({ seller_code })
+            .then(result => {
+              if (result.data.code === 0) {
+                if(!Array.isArray(result.data.data)){
+                  this.announcement = result.data.data;
+                }
+              }
+            })
+            .catch(err => {
+              this.$toast("请求超时！");
+            });
         },
     },
     created() {

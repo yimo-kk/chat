@@ -4,12 +4,12 @@
     <div v-if="activateId == 1" class="question">
       <div v-for="(item,index)  in questionData" :key="item.question_id" style="marginBottom: 5px;">
         <div class="question_item" @click="clickQuestion(index)">
-          <p class="dwote">
+          <p class="dwote" :title="item.question">
             <i class="icon iconfont icon-iconfontzhizuobiaozhun19 iconFont"></i>
             {{item.question}}
           </p>
         </div>
-        <p v-show="item.isShow" class="question_answer">{{item.answer}}</p>
+        <p v-show="item.isShow" class="question_answer" >{{item.answer}}</p>
       </div>
     </div>
     <div v-else-if="activateId == 2" class="group_list">
@@ -114,7 +114,6 @@ export default {
         // background-color: #fff;
         border-radius: 2px;
     }
-
     &::-webkit-scrollbar-thumb {
         border-radius: 2px;
         background: #d8d8d8;
@@ -134,9 +133,10 @@ export default {
   }
   .question_answer {
     margin-left: 12px;
-    padding: 5px 0 5px 5px;
-    color: #ccc;
-    font-size: 12px;
+    padding: 5px;
+    color: #585858;
+    white-space: pre-line;
+    font-size: .8rem;
   }
 }
 </style>

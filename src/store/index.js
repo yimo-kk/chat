@@ -117,24 +117,6 @@ export default new Vuex.Store({
       let audio = document.querySelector("#audio");
       if (!state.isPlaying) {
         audio.play()
-        // .then(() => {
-        //   // 支持自动播放
-        //   autoplay = true;
-        //   commit('setPlaying',true )
-        // }).catch(err => {
-        //   Toast('当前环境不支持自动播放')
-        //     // 不支持自动播放
-        //     autoplay = false;
-        //     commit('setPlaying',false )
-        //     document.addEventListener('mouseover',()=>{
-        //     let audio = document.querySelector("#audio");
-        //     audio.autoplay = true;
-        //     // })
-        // }).finally(() => {
-        //     audio.remove();
-        //     // 告诉调用者结果
-        //     resolve(autoplay);
-        // });
         commit('setPlaying',true )
       }
       let timeOut = setTimeout(() => {
