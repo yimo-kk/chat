@@ -67,7 +67,7 @@ export default {
         this.$router.push({
           name: "GroupChat",
           query: {
-            code: this.$route.query.code,
+            code: this.$store.state.code,
             group_id: data.group_id
           }
         });
@@ -75,7 +75,7 @@ export default {
         this.$router.push({
           name: "ChatPage",
           query: {
-            code: this.$route.query.code
+            code: this.$store.state.code
           }
         });
       }
@@ -103,7 +103,7 @@ export default {
       this.$route.query.username !== this.username
     ) {
       this.getUsersData({
-        code: this.$route.query.code,
+        code: this.$store.state.code,
         username: this.$route.query.username ? this.$route.query.username : ""
       }).then(data => {
         this.onRefresh();

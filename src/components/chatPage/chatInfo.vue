@@ -1,5 +1,5 @@
 <template>
-  <div :class=" ['chat_info',Object.keys(announcement).length > 0?'activity_contentTop': 'contentTop']" ref="chatInfo">
+  <div :class=" ['chat_info',Object.keys(announcement).length > 0?'activity_contentTop': 'contentTop']"  ref="chatInfo">
     <div class="who_chat">
       <div class="chat_title">
         <p class="go_back">
@@ -11,7 +11,7 @@
             @click.stop="()=>{
                 $router.push({name:'ChatList',query:{
                   username, 
-                  code:$route.query.code
+                  code:$store.state.code
                 }})
               }"
           ></van-icon>
@@ -27,6 +27,7 @@
         left-icon="volume-o"
         color="#7fb9f3"
         scrollable
+        @click="moreAnnouncement"
         :text="announcement.content"
       /> 
     </div>
@@ -206,6 +207,7 @@
       </div>
       <div class="mask"></div>
     </div>
+    <viewAnnouncement v-show="isMoreAnnouncement" @close='close' :newList='newList'></viewAnnouncement>
   </div>
 </template>
 
@@ -215,6 +217,7 @@ import { ImagePreview } from "vant";
 import Axios from "axios";
 import qs from "qs";
 import Audio from "@/components/chatPage/audio.vue";
+import viewAnnouncement from "@/components/viewAnnouncement";
 export default {
   name: "ChatInfo",
   props: {
@@ -255,10 +258,14 @@ export default {
     }
   },
   components: {
-    Audio
+    Audio,
+    viewAnnouncement
   },
   data() {
-    return {};
+    return {
+      isMoreAnnouncement:false,
+      newList:[]
+    };
   },
   computed: {
     ...mapState(["userInfo", "username", "code"]),
@@ -285,6 +292,15 @@ export default {
       },
       deep: true,
     },
+    // 有公告时也需要调用一下
+    announcement:{
+       handler(newVal, oldVal) {
+         if (newVal !== oldVal) {
+          this.messageDown();
+        }
+      },
+      deep: true,
+    }
   },
   methods: {
     // 来的消息显示在最下面
@@ -338,9 +354,8 @@ export default {
           let aLink = document.createElement("a");
           let evt = document.createEvent("HTMLEvents");
           evt.initEvent("click", true, true); //initEvent 不加后两个参数在FF下会报错  事件类型，是否冒泡，是否阻止浏览器的默认行为
-            aLink.href = dUrl;
-            aLink.download = typeof content == "string"? filename:content.filename;
-          
+          aLink.href = dUrl;
+          aLink.download = typeof content == "string"? filename:content.filename;
           aLink.click();
          }
         
@@ -355,6 +370,7 @@ export default {
     },
     // 播放语音
     playRecord(stream, index,isPlay) {
+    
       this.$emit("playRecord", stream, index,isPlay);
     },
     // pc端发送语音
@@ -367,17 +383,24 @@ export default {
     },
     getApicontent(id) {
       this.$emit("getApicontent", id);
+    },
+    moreAnnouncement(){
+     this.$parent.getNewsList({seller_code:this.userInfo.seller.seller_code})
+     .then((result) => {
+       this.newList = result.data
+       this.isMoreAnnouncement = true
+     }).catch((err) => {
+         this.$toast(err.msg)
+     });
+      
+    },
+    close(){
+       this.isMoreAnnouncement = false
     }
   },
   created() {},
   mounted() {
     this.messageDown();
   },
-  // updated() {
-  //   // 数据更新后就要执行一次
-  //   this.messageDown();
-  // }
 };
 </script>
-<style lang='less' scoped>
-</style>

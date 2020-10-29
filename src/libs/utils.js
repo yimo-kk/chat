@@ -132,3 +132,22 @@ export function isIE() {
 		return false;
 	}
 }
+// 获取url参数
+export function getQueryString(name) {  
+  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");  
+  var r = window.location.search.substr(1).match(reg);  
+  if (r != null) return decodeURI(r[2]);
+  return null;  
+}
+export function segmentation(string){
+  let obj={}
+  var vars = string.split("&");
+  for (var i=0;i<vars.length;i++) {
+    var pair = vars[i].split("=");
+      obj[pair[0]]=pair[1]
+    // if(pair[0] == variable){
+    //   return pair[1];
+    // }
+  }
+  return obj
+}

@@ -5,7 +5,7 @@
     </div>
     <div class="chat_serve w" >
       <div class="chat_box">
-        <!-- 消息展示  11111 -->
+        <!-- 消息展示-->
         <ChatInfo
           :chatUser="chatTitle"
           :messages="messages"
@@ -13,8 +13,10 @@
           :isPrompt="false"
           :isPerson="true"
           :name="true"
+          @stopRecorder="pcStopService"
           :groupNum="groupMember.num" 
           :announcement="announcement"
+          @playRecord="playRecord"
         ></ChatInfo>
         <!-- 聊天输入框 -->
         <div class="input_tab">
@@ -28,15 +30,14 @@
                 name="buoumaotubiao49"
                 @click.stop="faceContent"
               ></van-icon>
-              <!-- 暂时不展示群发文件 -->
-              <!-- <van-uploader :after-read="uploadeFile" accept="application/*">
+              <van-uploader :after-read="uploadeFile" accept="application/*" v-if="on_file">
                 <van-icon
                   class="iconfont font_size"
-                  size="30px"
+                  size="1.8rem"
                   class-prefix="icon"
                   name="wenjian1"
                 ></van-icon>
-              </van-uploader>-->
+              </van-uploader>
               <van-uploader
                 :after-read="uploadeImg"
                 accept="image/png, image/gif, image/jpg, image/webp, image/jpeg"
@@ -48,25 +49,24 @@
                   name="tupian"
                 ></van-icon>
               </van-uploader>
-              <!-- 群聊暂时不展示语音功能 -->
-              <!-- <van-icon
+              <!-- 由商家控制 -->
+              <van-icon v-if="isIE && on_voice "
                 class="iconfont font_size"
-                size="30px"
+                size="1.8rem"
                 class-prefix="icon"
                 name="yuyin"
-                @click="record"
-              ></van-icon>-->
+                @click="recordService"
+              ></van-icon>
             </div>
-            <!-- <div
+            <div
               class="record flex_center"
-              @touchstart="startRecord"
-              @touchmove="slideRecord"
-              @touchend="endRecord" 
+              @touchstart="startRecordServic"
+              @touchend="endRecordService" 
               v-if="isAudio"
             >
               {{ btnText }}
-            </div> -->
-            <div class="send_text" >
+            </div>
+            <div class="send_text" v-else>
               <textarea
                 v-model.trim="sendText"
                 placeholder="请输入内容..."
@@ -130,20 +130,20 @@
       </div>
       <pcChatList
         v-if="!isButtom"
-        @activtTab="activtTab"
         :chatType="2"
         :groupMemberList="groupMember.data"
       ></pcChatList>
       <!-- 录音图像 -->
-      <!-- <div class="record_mask" v-show="isMask">
+      <div class="record_mask" v-show="isMask">
         <div class="record_pic">
           <canvas id="canvas"></canvas>
           <p class="cancel">上滑 取消发送</p>
         </div>
-      </div> -->
+      </div>
       <!-- 播放录音 -->
-      <!-- <audio ref="audio" @ended="playEnd" style="display: none;"></audio> -->
+      <audio ref="audio" @ended="playEnd" style="display: none;"></audio>
     </div>
+      <!-- code 不存在 -->
     <div v-if="isGroupUser.state" class="is_group_user">
       <p class="is_group_user_msg">{{ isGroupUser.message ||isGroupUser.msg}}</p>
     </div>
@@ -159,12 +159,17 @@ import {
   getGroupChatLog,
   sendGroupChatFile,
   getGroupList,
+  uploadVoice
 } from "@/api/chat.js";
 import {
   compressImage,
   isImage,
   conversion,
-  conversionFace
+  conversionFace,
+  createUserName,
+  getSession,
+  setSession,
+  isIE
 } from "@/libs/utils.js";
 export default {
   name: "groupChat",
@@ -179,29 +184,35 @@ export default {
       messages: [],
       Pcrecord: false,
       sendType: null,
-      // isMask: false, // 录音时的波浪
-      // btnText: "按住 说话",
+      isMask: false, // 录音时的波浪
       chatTitle: "",
       groupMember: {},
       isGroupUser: {
         state: false,
         message: ""
       },
+      on_file: 0, //上传文件和语音功能是否开启 0否1是  
+      on_voice: 0,
+      socket:''
     };
   },
   computed: {
-    ...mapState(["userInfo", "code", "gid", "username", "userIp"])
+    isIE(){
+       return !isIE()
+     }
   },
   sockets: {
     // connect:查看socket是否渲染成功
-    connect() {},
+    connect() {
+    },
     reconnect(data) {
       console.log('重连')
-       this.$socket.emit("group", {
-              username: this.username,
-              group_id: this.gid
-            });
-      },
+      this.$socket.emit("group", {
+            username: this.username,
+            group_id: this.gid,
+            seller_code:this.code || this.userInfo.seller.seller_code
+      });
+    },
     // 收到群消息
     groupMsg(data) {
       if(this.username !== data.from_name) {
@@ -212,9 +223,7 @@ export default {
       this.$store.dispatch('playPromptVuex')
       this.$store.commit('titleScrolling')
       };
-      if (data.type === 3) {
-        data.message.play = false;
-      }
+      data.type === 3&&(data.message.play = false)
       data.type === 0 &&
         (data.message = conversionFace(data.content || data.message));
       this.messages.push(data);
@@ -316,6 +325,8 @@ export default {
       })
         .then(result => {
           this.loading = false
+          this.on_file = result.data.on_file
+          this.on_voice = result.data.on_voice
           if (result.data.code == 1 || result.data.code == -1 ) {
             this.isGroupUser.state = true
             this.isGroupUser.message = result.data.msg
@@ -340,13 +351,12 @@ export default {
           this.$toast(err.msg);
         });
     },
-    // pc端右边tab点击
-    activtTab() {},
     // 获取群成员
     getGroupList(group_id) {
-      getGroupList({ group_id })
+      getGroupList({ group_id }) 
         .then(result => {
-          this.groupMember = result.data;
+          result.data.data = Object.values( result.data.data)
+          this.groupMember = result.data
         })
         .catch(err => {
           this.$toast("请求超时！");
@@ -367,22 +377,57 @@ export default {
            
       }
     },
+    pcStopService(){
+      this.stopRecorder(this.uploadeVoice)
+    },
+    recordService(){
+      this.record(this.uploadeVoice)
+    },
+    startRecordServic(e){
+      this.startRecord(e,this.uploadeVoice)
+    },
+    endRecordService(e){
+      this.endRecord(e,this.uploadeVoice)
+    },
+    uploadeVoice(formdata){
+      uploadVoice({
+          params: formdata,
+          seller_code: this.userInfo.seller.seller_code
+        })
+        .then(result => {
+          this.loading=false
+          let data = result.data.data;
+          data.duration = Math.round(this.recorder.duration);
+          this.send(data);
+        })
+        .catch(err => {
+          this.loading=false
+        });
+    },
   },
   created() {
-    this.gid != this.$route.query.group_id &&
-      this.$store.commit("setGroupId", this.$route.query.group_id);
+    let userName = "";
+    if (this.$route.query.username) {
+      userName = this.$route.query.username;
+    } else if (getSession("username")) {
+      userName = getSession("username");
+    } else {
+      userName = createUserName();
+    }
+    setSession("username", userName);
+    this.$store.commit("setUsername", userName);
+
   },
   mounted() {
-    this.$socket.emit("connect");
-    let that = this;
     this.getUserInfo(()=>{
-        this.$socket.emit("group", {
-          username: this.username,
-          group_id: this.gid,
-          seller_code:this.userInfo.seller.seller_code
-        });
-        this.getGroupChatLog();
+      this.$socket.emit("group", {
+        username: this.username,
+        group_id: this.gid,
+        seller_code:this.userInfo.seller.seller_code
+      });
+      this.getGroupChatLog();
     });
+   
   }
 };
 </script>

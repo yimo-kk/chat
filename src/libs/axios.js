@@ -1,5 +1,7 @@
 import axios from "axios";
-
+import {
+  Toast
+} from 'vant';
 // const baseUrl = process.env.VUE_APP_BASE_URL + "/api";
 const baseUrl = process.env.VUE_APP_BASE_URL;
 axios.defaults.baseURL = baseUrl;
@@ -23,7 +25,15 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   function(response) {
     // 对响应数据做点什么
-    return response;
+    if(!response.data.data){
+      Toast('参数错误!')
+      return Promise.reject(new Error('参数错误'
+      ));
+    }else {
+      return response;
+    }
+
+
   },
   function(error) {
     // 对响应错误做点什么

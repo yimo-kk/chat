@@ -161,3 +161,25 @@ export function getNews(params) {
     params: params
   });
 }
+/**
+ *  最近十条公告
+ * @param {*} params
+ */
+export function getNewsList(params) {
+  return Axios({
+    url: `/chat/getNewsList`,
+    method: "GET",
+    params: params
+  });
+}
+/**
+ * 解密参数
+ * @param {*} params
+ */
+export function userDecode(params) {
+  return Axios({
+    url: `/chat/userDecode`,
+    method: "post",
+    data: qs.stringify(params)
+  });
+}
