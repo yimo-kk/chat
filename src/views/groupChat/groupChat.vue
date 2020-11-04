@@ -69,7 +69,7 @@
             <div class="send_text" v-else>
               <textarea
                 v-model.trim="sendText"
-                placeholder="请输入内容..."
+                :placeholder="$t('recording')"
                 rows="5"
                 cols="100"
                 class="textarea"
@@ -88,7 +88,7 @@
                   rows="1"
                   :autosize="{ maxHeight: 48, minHeight: 24 }"
                   type="textarea"
-                  placeholder="请输入内容..."
+                  :placeholder="$t('recording')"
                 >
                   <van-icon
                     class="iconfont"
@@ -109,7 +109,7 @@
                   :class="['btn', 'send_btn']"
                   @click="textSend"
                 >
-                  发送
+                  {{$t('send')}}
                 </p>
               </transition>
             </div>
@@ -137,7 +137,7 @@
       <div class="record_mask" v-show="isMask">
         <div class="record_pic">
           <canvas id="canvas"></canvas>
-          <p class="cancel">上滑 取消发送</p>
+          <p class="cancel">  {{$t('clsSend')}}</p>
         </div>
       </div>
       <!-- 播放录音 -->
@@ -359,7 +359,7 @@ export default {
           this.groupMember = result.data
         })
         .catch(err => {
-          this.$toast("请求超时！");
+          this.$toast(this.$t('timeOut'));
         });
     },
     groupAddOrLeave(data,opt){

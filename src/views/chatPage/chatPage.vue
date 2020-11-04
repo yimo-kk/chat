@@ -60,7 +60,7 @@
             <textarea
             ref="textarea"
               v-model.trim="sendText"
-              placeholder="请输入内容..."
+              :placeholder="$t('sendMsg')"
               rows="5"
               cols="100"
               class="textarea"
@@ -77,7 +77,7 @@
                 rows="1"
                 :autosize=" { maxHeight: 48, minHeight: 24 }"
                 type="textarea"
-                placeholder="请输入内容..."
+                :placeholder="$t('sendMsg')"
               >
                 <van-icon
                   class="iconfont"
@@ -97,7 +97,7 @@
                 v-show="sendText.length || !isButtom"
                 :class="['btn','send_btn']"
                 @click="textSend"
-              >发送</p>
+              >{{$t('send')}}</p>
             </transition>
           </div>
         </div>
@@ -118,7 +118,7 @@
     <div class="record_mask" v-show="isMask">
       <div class="record_pic">
         <canvas id="canvas"></canvas>
-        <p class="cancel">上滑 取消发送</p>
+        <p class="cancel">{{$t('clsSend')}}</p>
       </div>
     </div>
     <!-- 播放录音 -->
@@ -177,7 +177,7 @@ export default {
       isLoading: false,
       chatUser: "官方客服",
       isPrompt: true,
-      profilePhoto: 'https://service.nikidigital.net/static/common/images/kefu.png',
+      profilePhoto: 'https://server.nikidigital.net/static/images/kefu.png',
       questionList: [],
       outTime:false,
        isGroupUser: {
@@ -279,7 +279,7 @@ export default {
       this.sendType = 1;
       if (!isImage(file.file.type)) {
         this.$toast({
-          message: "请正确选择图片！",
+          message: this.$t('selectImg'),
           position: "top"
         });
       } else {
@@ -290,7 +290,7 @@ export default {
           },
           error => {
             // 压缩出错
-           this.$toast('发送失败！')
+           this.$toast(this.$t('sendErr'))
           }
         );
       }
@@ -374,12 +374,13 @@ export default {
           if (result.data.code === 0) {
             this.messages.push({
               kefu_name: "kefu",
-              message: "感谢你的评价"
+              message: this.$t('comment')
             });
           }
         })
         .catch(err => {
-          this.$toast('评价失败！')
+          console.log(err)
+          this.$toast(this.$t('commentErr'))
         });
     },
     // 获取进入客服主动发送消息
@@ -393,15 +394,15 @@ export default {
               this.messages.push({
                 isApi: true,
                 apiList: result.data.data,
-                from_name: "官方客服",
+                from_name: this.$t('service'),
                 from_avatar: this.profilePhoto
               });
           } else {
-            this.$toast("请求超时");
+            this.$toast(this.$t('timeOut'));
           }
         })
         .catch(err => {
-          this.$toast("请求超时");
+          this.$toast(this.$t('timeOut'));
         });
     },
     getApicontent(id) {
@@ -413,7 +414,7 @@ export default {
             this.messages.push({
               isApi: true,
               content: result.data.data,
-              from_name: "官方客服",
+              from_name: this.$t('service'),
               from_avatar: this.profilePhoto
             });
           }

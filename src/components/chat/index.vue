@@ -155,11 +155,11 @@
             <div>
               <img src="@/assets/iamge/voice.gif" width="100px" height="100px" />
               <br />
-              <p>正在录音请说话...</p>
+              <p>{{$t('recording')}}</p>
             </div>
             <div class="Pc_btn">
-              <span class="flex_center" style="cursor:pointer;" @click="stopRecorder">发送</span>
-              <span class="flex_center" style="cursor:pointer;" @click="pcCancel">取消</span>
+              <span class="flex_center" style="cursor:pointer;" @click="stopRecorder">{{$t('send')}}</span>
+              <span class="flex_center" style="cursor:pointer;" @click="pcCancel">{{$t('cancel')}}</span>
             </div>
           </div>
           <div class="mask"></div>

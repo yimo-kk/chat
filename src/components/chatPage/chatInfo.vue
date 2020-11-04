@@ -2,7 +2,12 @@
   <div :class=" ['chat_info',Object.keys(announcement).length > 0?'activity_contentTop': 'contentTop']"  ref="chatInfo">
     <div class="who_chat">
       <div class="chat_title">
-        <p class="go_back">
+        <div class="language">
+               <span @click="changeLocale(localeval==='zh'?'en':'zh')" >
+                 {{localeval=='zh'?'En':'Zh'}}
+                 </span>
+        </div>
+        <!-- <div class="go_back">
           <van-icon
             class="iconfont"
             class-prefix="icon"
@@ -15,7 +20,7 @@
                 }})
               }"
           ></van-icon>
-        </p>
+        </div> -->
         <p class="title">{{chatUser}}</p>
         <p v-if="isPerson" class="group flex_center">
           <van-icon class="iconfont" class-prefix="icon" name="qunzu" size="20px"></van-icon>
@@ -194,15 +199,15 @@
     </div>
     <!-- pc端 -->
     <div v-if="Pcrecord">
-      <div class="Pc_record">
+      <div class="Pc_record"> 
         <div>
           <img src="@/assets/iamge/voice.gif" width="100px" height="100px" />
           <br />
-          <p>正在录音请说话...</p>
+          <p>{{$t('recording')}}</p>
         </div>
         <div class="Pc_btn">
-          <span class="flex_center" style="cursor:pointer;" @click="stopRecorder">发送</span>
-          <span class="flex_center" style="cursor:pointer;" @click="pcCancel">取消</span>
+          <span class="flex_center" style="cursor:pointer;" @click="stopRecorder">{{$t('send')}}</span>
+          <span class="flex_center" style="cursor:pointer;" @click="pcCancel">{{$t('cancel')}}</span>
         </div>
       </div>
       <div class="mask"></div>
@@ -253,7 +258,8 @@ export default {
     announcement: {
       type: Object,
       default() {
-        return {};
+        return {
+        };
       }
     }
   },
@@ -264,7 +270,8 @@ export default {
   data() {
     return {
       isMoreAnnouncement:false,
-      newList:[]
+      newList:[],
+      localeval:'zh'
     };
   },
   computed: {
@@ -361,7 +368,7 @@ export default {
         
 
       } catch (error) {
-        this.$toast("文件已过期！");
+        this.$toast(this.$t("fileErr"));
       }
     },
     // pc取消发送语音需要暂停处理
@@ -370,7 +377,6 @@ export default {
     },
     // 播放语音
     playRecord(stream, index,isPlay) {
-    
       this.$emit("playRecord", stream, index,isPlay);
     },
     // pc端发送语音
@@ -396,9 +402,12 @@ export default {
     },
     close(){
        this.isMoreAnnouncement = false
+    },
+    changeLocale(type){
+      this.localeval=type
+      this.$i18n.locale = type
     }
   },
-  created() {},
   mounted() {
     this.messageDown();
   },

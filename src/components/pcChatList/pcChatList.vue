@@ -55,15 +55,15 @@ export default {
       tabList: [
         {
           id: 1,
-          name: "群成员"
+          name:  this.$t('groupMember')
         },
         {
           id: 2,
-          name: "常见问题"
+          name:  this.$t('problem')
         },
         {
           id: 3,
-          name: "公告"
+          name: this.$t('announcement')
         }
       ]
     };

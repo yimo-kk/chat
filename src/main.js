@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 import "@/assets/css/common.css";
 import "./assets/iconfont/iconfont.css";
 import "vant/lib/index.css";
+import i18n from './i18n';
 // 移动端调试
 import Vconsole from "vconsole";
 let vConsole = new Vconsole();
@@ -59,24 +60,47 @@ let code = getQueryString('code')
 try {
   userDecode({u,code})
   .then((result) => {
+    if(!result.data.data){
+      Dialog.alert({
+        message: '商家不存在或参数错误！',
+        showConfirmButton:false,
+        showCancelButton:false
+      })
+      return
+    }
     let data = segmentation(result.data.data)
+    if(data.username != localStorage.getItem('username')){
+      localStorage.removeItem('kefu_code')
+    }
     setSession("username", data.username);
     store.commit("setUsername", data.username);
     store.commit("setCode", code); 
     data.group_id && 
     store.commit("setGroupId", data.group_id);
+    let socket = {
+      path: data.group_id ? `/socket.io/?username=${data.username}&code=${data.code}&group_id=${data.group_id}&`:`/socket.io/?username=${data.username}&code=${data.code}&`,
+      transports: ['websocket', 'xhr-polling', 'jsonp-polling']
+    }
+    if (/Firefox\/\s/.test(navigator.userAgent)){
+      socket.transports=['xhr-polling']
+      } 
+      else if (/MSIE (\d+.\d+);/.test(navigator.userAgent)){
+        socket.transports=['jsonp-polling']
+      }
+      else { 
+          socket.transports=['websocket']
+      }
+      
     Vue.use(
       new VueSocketIO({
         debug: true,
-        connection: SocketIO.connect(`wss://server.nikidigital.net`, {
-          path: data.group_id ? `/socket.io/?username=${data.username}&code=${data.code}&group_id=${data.group_id}&`:`/socket.io/?username=${data.username}&code=${data.code}&`,
-          transports: ['websocket', 'xhr-polling', 'jsonp-polling']
-        }),
+        connection: SocketIO.connect(`wss://server.nikidigital.net`,socket ),
         store
       })
     );
     new Vue({
       router,
+      i18n,
       store,
       render: h => h(App)
     }).$mount("#app");

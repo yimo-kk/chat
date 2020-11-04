@@ -3,7 +3,7 @@ import {
   serviceSendChatFile,
   getNewsList
 } from "@/api/chat.js";
-import { isIE } from "@/libs/utils.js";
+import { isIE,conversion,conversionFace } from "@/libs/utils.js";
 const appData = require("@/assets/emojis.json");
 import { mapState } from "vuex";
 import Recorder from "js-audio-recorder";
@@ -43,9 +43,21 @@ export default function() {
           }
         },
         sendText(newVal){
-          if (newVal.length >= 128) {
-             this.sendText = newVal.slice(0, 128);
-           }
+          if(!newVal)return
+          var str = conversion(newVal)
+          console.log(str.length)
+          if (str.length >= 128) {
+            var string = str.slice(0, 128)
+            var arr = string.split('[')
+            arr.forEach((item,index)=>{
+              if(index >0 &&item.indexOf(']') === -1 ){
+                arr.pop()
+              }
+            })
+           this.sendText = conversionFace(arr.join('['))
+         }else {
+          this.sendText = conversionFace(str)
+         }
         },
       },
       computed: {
@@ -372,6 +384,7 @@ export default function() {
           );
           if (flag) return;
           that.faceShow = false;
+          that.faceList =[]
         });
         window.addEventListener("resize", function() {
             that.screenWidth = document.body.offsetWidth;

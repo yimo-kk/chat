@@ -12,12 +12,12 @@
         :class="['tab_item',activteId==1 ?'tab_item_activte':'']"
         @click="activtTab(1)"
         v-show=" chatType == 1"
-      >常见问题</li>
+      >{{$t('problem')}}</li>
       <li
         :class="['tab_item',activteId==2 ?'tab_item_activte':'']"
         @click="activtTab(2)"
         v-show=" chatType == 2"
-      >群成员</li>
+      >{{this.$t('groupMember')}}</li>
       <!-- <li :class="['tab_item',activteId==3 ?'tab_item_activte':'']" @click="activtTab(3)">公告</li> -->
     </ul>
   </div>
