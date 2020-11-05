@@ -30,7 +30,7 @@
                 name="buoumaotubiao49"
                 @click.stop="faceContent"
               ></van-icon>
-              <van-uploader :after-read="uploadeFile" accept="application/*" v-if="on_file">
+              <van-uploader :after-read="uploadeFile" accept="*" v-if="on_file">
                 <van-icon
                   class="iconfont font_size"
                   size="1.8rem"
@@ -69,7 +69,7 @@
             <div class="send_text" v-else>
               <textarea
                 v-model.trim="sendText"
-                :placeholder="$t('recording')"
+                :placeholder="$t('sendMsg')"
                 rows="5"
                 cols="100"
                 class="textarea"
@@ -88,7 +88,7 @@
                   rows="1"
                   :autosize="{ maxHeight: 48, minHeight: 24 }"
                   type="textarea"
-                  :placeholder="$t('recording')"
+                  :placeholder="$t('sendMsg')"
                 >
                   <van-icon
                     class="iconfont"
@@ -167,8 +167,8 @@ import {
   conversion,
   conversionFace,
   createUserName,
-  getSession,
-  setSession,
+  getStorage,
+  setStorage,
   isIE
 } from "@/libs/utils.js";
 export default {
@@ -406,16 +406,15 @@ export default {
     },
   },
   created() {
-    let userName = "";
-    if (this.$route.query.username) {
-      userName = this.$route.query.username;
-    } else if (getSession("username")) {
-      userName = getSession("username");
-    } else {
-      userName = createUserName();
-    }
-    setSession("username", userName);
-    this.$store.commit("setUsername", userName);
+    // let userName = "";
+    // if (this.$route.query.username) {
+    //   userName = this.$route.query.username;
+    // } else if (getStorage("username")) {
+    //   userName = getStorage("username");
+    // } else {
+    //   userName = createUserName();
+    // }
+    // this.$store.commit("setUsername", userName);
 
   },
   mounted() {

@@ -23,7 +23,7 @@
 <script>
 import ChatListItem from "@/components/chatPage/chatListItem.vue";
 import { mapActions, mapState } from "vuex";
-import { setSession, getSession } from "@/libs/utils.js";
+import { setStorage } from "@/libs/utils.js";
 export default {
   name: "ChatList",
   components: {

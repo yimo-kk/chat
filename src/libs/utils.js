@@ -70,20 +70,20 @@ export function base64ToBlob(code) {
   return new Blob([uInt8Array], { type: contentType });
 }
 // 存 取 删 localStorage 修改为永久存储
-export function setSession(name, value) {
+export function setStorage(name, value) {
   if (typeof value !== "string") {
     value = JSON.stringify(value);
   }
   localStorage.setItem(name, value);
 }
-export function getSession(name) {
+export function getStorage(name) {
   if (localStorage.getItem(name)) {
     return localStorage.getItem(name);
   } else return "";
 }
-export function removeSession(name) {
+export function removeStorage(name) {
   localStorage.removeItem(name);
-}
+} 
 // 表情转化
 export function conversion(input) {
   if(!input)return

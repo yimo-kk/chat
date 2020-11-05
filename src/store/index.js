@@ -1,21 +1,22 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import { getChatListData, getUsersData } from "@/api/chat.js";
-import { getSession, setSession } from "@/libs/utils.js";
+import { getStorage, setStorage } from "@/libs/utils.js";
 import { Toast} from "vant";
 Vue.use(Vuex).use(Toast);
 
 export default new Vuex.Store({
   state: {
     messageList: [],
-    userInfo: getSession("userInfo") ? JSON.parse(getSession("userInfo")) : {},
-    username: getSession("username") || null,
-    code: getSession("code") || null,
-    uid: getSession("uid") || null,
-    gid: getSession("group_id") || null,
-    userIp: getSession("userIp") || null,
+    userInfo:  {},
+    username:  null,
+    code: null,
+    uid:  null,
+    gid:  null,
+    userIp: null,
     setPlaying:false, // 新消息声音提示 
     timeOut:null,
+    kefu_code:'',
     tit:'你有新的消息',
     num:0
   },
@@ -42,23 +43,21 @@ export default new Vuex.Store({
     },
     setUsername(state, data) {
       state.username = data;
-      setSession("username", data);
     },
     setCode(state, data) {
       state.code = data;
-      setSession("code", data);
     },
     setUid(state, data) {
       state.uid = data;
-      setSession("uid", data);
     },
     setGroupId(state, data) {
       state.gid = data;
-      setSession("group_id", data);
     },
     setUserIp(state, data) {
       state.userIp = data;
-      setSession("userIp", data);
+    },
+    setKefu_code(state, data){
+      state.kefu_code = data;
     },
     titleScrolling (state){
       let title= state.tit  // JSON.parse(JSON.stringify(state.tit))
@@ -104,7 +103,7 @@ export default new Vuex.Store({
         await getUsersData(data)
           .then(result => {
             commit("setUserInfo", result.data);
-            setSession("userInfo", result.data);
+            setStorage("userInfo", result.data);
             resolve(result.data);
           })
           .catch(err => {

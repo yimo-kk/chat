@@ -26,7 +26,7 @@ export default function() {
         screenWidth: document.body.offsetWidth,
         isButtom: document.body.offsetWidth < 540,
         announcement:{},
-        btnText:'按住 说话',
+        btnText:'按住 说话', 
         recorder:recorderData,
         isAudio: false, // 录音时的波浪
         drawRecordId: null,
@@ -45,8 +45,8 @@ export default function() {
         sendText(newVal){
           if(!newVal)return
           var str = conversion(newVal)
-          console.log(str.length)
           if (str.length >= 128) {
+            this.$toast(this.$t('overLimit'))
             var string = str.slice(0, 128)
             var arr = string.split('[')
             arr.forEach((item,index)=>{
@@ -61,7 +61,7 @@ export default function() {
         },
       },
       computed: {
-        ...mapState(["userInfo", "code", "gid", "username", "userIp"]),
+        ...mapState(["userInfo", "code", "gid", "username", "userIp",'kefu_code']),
         isIE(){
           return !isIE()
         }

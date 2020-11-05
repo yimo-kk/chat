@@ -16,7 +16,7 @@ import i18n from './i18n';
 import Vconsole from "vconsole";
 let vConsole = new Vconsole();
 import { userDecode } from "@/api/chat.js";
-import { createUserName, setSession, getSession,getQueryString,segmentation } from "@/libs/utils";
+import { createUserName, setStorage, getStorage,getQueryString,segmentation } from "@/libs/utils";
 
 // vant
 import {
@@ -72,7 +72,19 @@ try {
     if(data.username != localStorage.getItem('username')){
       localStorage.removeItem('kefu_code')
     }
-    setSession("username", data.username);
+
+    let obj={}
+    if(getStorage(code)){
+      obj =JSON.parse(getStorage(code))
+      if(!obj[data.username]){
+        obj[data.username] = ''
+      }
+      setStorage(code, JSON.stringify(obj));
+    }else {
+      obj[data.username]=''
+      setStorage(code, obj);
+    }
+    
     store.commit("setUsername", data.username);
     store.commit("setCode", code); 
     data.group_id && 
@@ -87,10 +99,6 @@ try {
       else if (/MSIE (\d+.\d+);/.test(navigator.userAgent)){
         socket.transports=['jsonp-polling']
       }
-      else { 
-          socket.transports=['websocket']
-      }
-      
     Vue.use(
       new VueSocketIO({
         debug: true,

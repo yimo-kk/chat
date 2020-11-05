@@ -31,7 +31,7 @@
               name="buoumaotubiao49"
               @click.stop="faceContent"
             ></van-icon>
-            <van-uploader :after-read="uploadeFile" accept="application/*">
+            <van-uploader :after-read="uploadeFile" accept="*">
               <van-icon class="iconfont font_size" size="1.8rem" class-prefix="icon" name="wenjian1"></van-icon>
             </van-uploader>
             <van-uploader
@@ -146,8 +146,8 @@ import {
   compressImage,
   isImage,
   base64ToBlob,
-  setSession,
-  getSession,
+  setStorage,
+  getStorage,
   conversion,
   conversionFace,
   createUserName,
@@ -194,17 +194,35 @@ export default {
   sockets: {
     // connect:查看socket是否渲染成功
     connect() {
+    console.log('成功')
     },
     // disconnect:检测socket断开连接
     disconnect(data) {
       console.log('断开')
     },
-    reconnect(data) {console.log('重连')}, 
+    reconnect(data) {
+      console.log('重连')
+      this.$socket.emit("enter", {
+        customer_id: this.userInfo.data ? this.userInfo.data.uid : "",
+        customer_ip: this.userIp.ip,
+        customer_name: this.username,
+        seller_code: this.userInfo.seller.seller_code,
+        customer_avatar: this.userInfo.data.headimg,
+        is_tourist: this.userInfo.data.is_tourist,
+        customer_area:this.userIp.address,
+      });
+      }, 
     //有客服接待通知
     prompt(data) {
       data.kefu_name = "kefu";
       this.messages.push(data);
-      setSession("kefu_code", data.kefu_code);
+       this.$store.commit('setKefu_code',data.kefu_code)
+      let obj={}
+      if(getStorage(this.$route.query.code)){
+        obj = JSON.parse(getStorage(this.$route.query.code))
+        obj[this.username] = data.kefu_code
+         setStorage( this.$route.query.code, obj );
+      }
     },
     // 客服给用户发送消息
     serviceMsg(data) {
@@ -234,7 +252,7 @@ export default {
       if (!this.sendText.length && this.sendType === 0) return;
       let my_send = {
         cmd: "user-service",
-        kefu_code: getSession("kefu_code"),
+        kefu_code: JSON.parse(getStorage(this.code))[this.username],
         from_avatar: this.userInfo.data.headimg,
         message: data,
         from_id: this.userInfo.data.uid ? this.userInfo.data.uid : "",
@@ -349,22 +367,21 @@ export default {
     },
     // 发送接待
     reception() {
-      let params = {
-        customer_id: this.userInfo.data ? this.userInfo.data.uid : "",
+      this.$socket.emit("enter", {
+          customer_id: this.userInfo.data ? this.userInfo.data.uid : "",
         customer_ip: this.userIp.ip,
         customer_name: this.username,
         seller_code: this.userInfo.seller.seller_code,
         customer_avatar: this.userInfo.data.headimg,
         is_tourist: this.userInfo.data.is_tourist,
          customer_area:this.userIp.address,
-      };
-      this.$socket.emit("enter", params);
+      });
     },
     submit(index, val) {
       if (val) return;
       praise({
         uid: this.userInfo.data.uid,
-        kefu_code: getSession("kefu_code"),
+        kefu_code:JSON.parse(getStorage(this.code))[this.username],
         code: this.userInfo.seller.seller_code,
         content: this.messages[index].scoreMessage,
         star: this.messages[index].scoreNum
