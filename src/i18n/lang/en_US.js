@@ -1,5 +1,5 @@
 module.exports = {
-  overLimit:'Send length exceeded', 
+  overLimit:'The content of the sent message exceeds the sending length', 
   problem:'common problem',
   send:'Send',
   clsSend:'Swipe up to cancel sending',

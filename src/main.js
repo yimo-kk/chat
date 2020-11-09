@@ -16,7 +16,7 @@ import i18n from './i18n';
 import Vconsole from "vconsole";
 let vConsole = new Vconsole();
 import { userDecode } from "@/api/chat.js";
-import { createUserName, setStorage, getStorage,getQueryString,segmentation } from "@/libs/utils";
+import {  setStorage, getStorage,getQueryString,segmentation } from "@/libs/utils";
 
 // vant
 import {
@@ -69,10 +69,6 @@ try {
       return
     }
     let data = segmentation(result.data.data)
-    if(data.username != localStorage.getItem('username')){
-      localStorage.removeItem('kefu_code')
-    }
-
     let obj={}
     if(getStorage(code)){
       obj =JSON.parse(getStorage(code))
@@ -84,13 +80,12 @@ try {
       obj[data.username]=''
       setStorage(code, obj);
     }
-    
     store.commit("setUsername", data.username);
-    store.commit("setCode", code); 
+    store.commit("setCode", code);
     data.group_id && 
     store.commit("setGroupId", data.group_id);
     let socket = {
-      path: data.group_id ? `/socket.io/?username=${data.username}&code=${data.code}&group_id=${data.group_id}&`:`/socket.io/?username=${data.username}&code=${data.code}&`,
+      path: data.group_id ? `/socket.io/?username=${data.username}&code=${code}&group_id=${data.group_id}&`:`/socket.io/?username=${data.username}&code=${code}&`,
       transports: ['websocket', 'xhr-polling', 'jsonp-polling']
     }
     if (/Firefox\/\s/.test(navigator.userAgent)){

@@ -1,5 +1,5 @@
 module.exports = {
-  overLimit:'超出发送长度啦',
+  overLimit:'发送的消息内容超出发送长度啦', 
   problem:'常见问题',
   send:'发送',
   clsSend:'上滑  取消发送',

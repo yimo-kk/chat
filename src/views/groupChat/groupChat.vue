@@ -7,6 +7,7 @@
       <div class="chat_box">
         <!-- 消息展示-->
         <ChatInfo
+        ref="GroupChatInfo"
           :chatUser="chatTitle"
           :messages="messages"
           :Pcrecord="Pcrecord"
@@ -17,6 +18,9 @@
           :groupNum="groupMember.num" 
           :announcement="announcement"
           @playRecord="playRecord"
+          :isMore='isMore'
+          :count='count'
+          @getLog='getLog'
         ></ChatInfo>
         <!-- 聊天输入框 -->
         <div class="input_tab">
@@ -24,7 +28,7 @@
             <div class="handle_other">
               <van-icon
                 class="iconfont faceShow font_size"
-                size="28px"
+                size="1.8rem"
                 class-prefix="icon"
                 slot="right-icon"
                 name="buoumaotubiao49"
@@ -167,7 +171,6 @@ import {
   conversion,
   conversionFace,
   createUserName,
-  getStorage,
   setStorage,
   isIE
 } from "@/libs/utils.js";
@@ -193,7 +196,10 @@ export default {
       },
       on_file: 0, //上传文件和语音功能是否开启 0否1是  
       on_voice: 0,
-      socket:''
+      socket:'',
+      page:1,
+      count:0,
+      isMore:false,
     };
   },
   computed: {
@@ -317,14 +323,11 @@ export default {
       }
     },
     // 获取群聊记录
-    getGroupChatLog() {
-      getGroupChatLog({
-        group_id: this.gid,
-        seller_code: this.userInfo.seller.seller_code,
-        uid: this.userInfo.data.uid
-      })
+    getGroupChatLog(params,fn) {
+      getGroupChatLog(params)
         .then(result => {
           this.loading = false
+          this.count = result.data.count
           this.on_file = result.data.on_file
           this.on_voice = result.data.on_voice
           if (result.data.code == 1 || result.data.code == -1 ) {
@@ -332,10 +335,9 @@ export default {
             this.isGroupUser.message = result.data.msg
             return;
           } else {
-            this.getNewsData(this.userInfo.seller.seller_code);
-            this.getGroupList(this.$route.query.group_id);
+            
             this.chatTitle = result.data.group_name;
-            this.messages = result.data.data.map(item => {
+           let array = result.data.data.map(item => {
               item.type == 3 && (item.play = false);
               if (item.type == 0) {
                 item.content
@@ -344,6 +346,16 @@ export default {
               }
               return item;
             });
+            if(this.page > 1){
+              this.messages.unshift(...array)
+              fn &&  fn()
+              setTimeout(()=>{
+              this.isMore = false
+             },200)
+           }else {
+               this.messages = array
+               this.isMore = false
+           }
           }
         })
         .catch(err => {
@@ -364,7 +376,7 @@ export default {
     },
     groupAddOrLeave(data,opt){
       if(Object.keys(this.groupMember).length && data.group_id == this.gid){
-       if( opt=== 'add' ){
+       if( opt=== 'add' && !this.groupMember.data.includes(data.username) ){
           this.groupMember.num += 1
           this.groupMember.data.push(data.username)
        }else if(opt=== 'leave' ){
@@ -404,27 +416,40 @@ export default {
           this.loading=false
         });
     },
+     getLog(e){ 
+      this.isMore = true
+      this.page ++
+      let scrollH = this.$refs.GroupChatInfo.$refs.chatInfo.scrollHeight
+     this.getGroupChatLog({
+        page:this.page,
+        group_id: this.gid,
+        seller_code: this.userInfo.seller.seller_code,
+        uid: this.userInfo.data.uid
+      },
+        ()=>{
+          setTimeout(()=>{
+            e.target.scrollTo(0,  e.target.scrollHeight -  (scrollH  + 30 ) )
+            }) 
+          })
+    },
   },
   created() {
-    // let userName = "";
-    // if (this.$route.query.username) {
-    //   userName = this.$route.query.username;
-    // } else if (getStorage("username")) {
-    //   userName = getStorage("username");
-    // } else {
-    //   userName = createUserName();
-    // }
-    // this.$store.commit("setUsername", userName);
-
   },
   mounted() {
     this.getUserInfo(()=>{
+      this.getNewsData(this.userInfo.seller.seller_code);
+      this.getGroupList(this.gid);
       this.$socket.emit("group", {
         username: this.username,
         group_id: this.gid,
         seller_code:this.userInfo.seller.seller_code
       });
-      this.getGroupChatLog();
+      this.getGroupChatLog({
+        page:1,
+        group_id: this.gid,
+        seller_code: this.userInfo.seller.seller_code,
+        uid: this.userInfo.data.uid
+      });
     });
    
   }

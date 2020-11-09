@@ -18,6 +18,9 @@
         :announcement="announcement"
         :name="false"
         :isPrompt="isPrompt"
+        :isMore='isMore'
+        :count='count'
+        @getLog='getLog'
       ></ChatInfo>
       <!-- 聊天输入框 -->
       <div class="input_tab">
@@ -184,6 +187,9 @@ export default {
         state: false,
         message: ""
       },
+      page:1,
+      count:0,
+      isMore:false,
     };
   },
   watch: {
@@ -241,7 +247,7 @@ export default {
     score(data) {
       data.endChat = true;
       data.isScore = false;
-      data.scoreNum = 0; //评分
+      data.scoreNum = 1; //评分
       data.scoreMessage = ""; //评分内容
       this.messages.push(data);
     }
@@ -341,15 +347,12 @@ export default {
         });
     },
     // 获取和客服的聊天记录
-    getServiceChatMessage() {
-      getServiceChatLog({
-        username: this.userInfo.data.username,
-        seller_code: this.userInfo.seller.seller_code
-      }) 
+    getServiceChatMessage(params,fn) {
+      getServiceChatLog(params) 
         .then(result => {
           this.loading = false
-          this.getNewsData(this.userInfo.seller.seller_code);
-          this.messages = result.data.data.map(item => {
+          this.count = result.data.count
+          let array = result.data.data.map(item => {
             item.type == 3 && (item.play = false);
             if (item.type == 0) {
               item.content
@@ -358,7 +361,18 @@ export default {
             }
             return item;
           });
-          this.getServiceSendData( this.code);
+           if(this.page > 1){
+             this.messages.unshift(...array)
+              fn &&  fn()
+              setTimeout(()=>{
+              this.isMore = false
+             },200)
+           }else {
+              fn &&  fn()
+              this.messages  = array
+               this.isMore = false
+           }
+         
         })
         .catch(err => {
            this.loading = false
@@ -451,12 +465,36 @@ export default {
         .catch(err => {
           this.$toast(err.msg)
         });
-    }
+    },
+    getLog(e){ 
+      this.isMore = true
+      this.page ++
+      let scrollH = this.$refs.ChatInfo.$refs.chatInfo.scrollHeight
+      this.getServiceChatMessage({
+        page:this.page,
+        username: this.userInfo.data.username,
+        seller_code: this.userInfo.seller.seller_code
+      },
+        ()=>{
+          setTimeout(()=>{
+            e.target.scrollTo(0,  e.target.scrollHeight -  (scrollH  + 30 ) )
+            }) 
+          })
+    },
   },
   mounted() {
     this.getUserInfo(() => {
         this.reception();
-        this.getServiceChatMessage();
+        this.getNewsData(this.userInfo.seller.seller_code);
+         
+        this.getServiceChatMessage({
+        page:1,
+        username: this.userInfo.data.username,
+        seller_code: this.userInfo.seller.seller_code
+      },()=>{
+         this.getServiceSendData( this.code);
+      });
+     
         // Pc端获取列表
         if (!this.isButtom) {
           this.getQuestion(this.userInfo.seller.seller_code);
@@ -491,4 +529,8 @@ export default {
     line-height: 55px;
   }
 }
+.van-notice-bar__wrap{
+  line-height: 25px !important;
+}
+
 </style>

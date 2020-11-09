@@ -77,3 +77,7 @@ img {
 .van-cell--large {
     padding: 6px !important;
 }
+.van-notice-bar__wrap{
+    display: inline-block !important;
+    /* // display: flex !important;             NEW, Spec - Opera 12.1, Firefox 20+ */
+}

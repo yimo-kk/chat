@@ -1,10 +1,17 @@
 <template>
   <div :class=" ['chat_info',Object.keys(announcement).length > 0?'activity_contentTop': 'contentTop']"  ref="chatInfo">
+     <div class="more_chat_log ">
+           <van-loading size="1rem"  v-if="isMore" class="more_log"  color="#1989fa">
+             <span style="fontSize:12px">加载中...</span>
+           </van-loading>
+        </div>
+        <p v-if='(count>50 &&messages.length >= count ) && !isMore ' class="more_log">没有更多了...</p>
+        
     <div class="who_chat">
       <div class="chat_title">
         <div class="language">
-               <span @click="changeLocale(localeval==='zh'?'en':'zh')" >
-                 {{localeval=='zh'?'En':'Zh'}}
+               <span @click="changeLocale(localeval==='zh-CN'?'en-US':'zh-CN')" >
+                 {{localeval=='zh-CN'?'En':'Zh'}}
                  </span>
         </div>
         <!-- <div class="go_back">
@@ -261,6 +268,14 @@ export default {
         return {
         };
       }
+    },
+     isMore:{
+      type:Boolean,
+      default:false
+    },
+    count:{
+      type:Number,
+      default:20
     }
   },
   components: {
@@ -271,7 +286,8 @@ export default {
     return {
       isMoreAnnouncement:false,
       newList:[],
-      localeval:'zh'
+      localeval:'zh-CN',
+
     };
   },
   computed: {
@@ -294,7 +310,7 @@ export default {
     "messages.length": {
       handler(newVal, oldVal) {
         if (newVal !== oldVal) {
-          this.messageDown();
+          this.isMore==false &&  this.messageDown();
         }
       },
       deep: true,
@@ -312,10 +328,11 @@ export default {
   methods: {
     // 来的消息显示在最下面
     messageDown() {
-      let that = this;
-      this.$nextTick(() => {
-          that.$refs.chatInfo.scrollTop = that.$refs.chatInfo.scrollHeight;
+      if(this.messages.length &&  this.isMore==false){
+        this.$nextTick(() => {
+          this.$refs.chatInfo.scrollTop = this.$refs.chatInfo.scrollHeight;
       });
+      }
     },
     // 图片显示延迟显示
     loadImg(){
@@ -406,10 +423,24 @@ export default {
     changeLocale(type){
       this.localeval=type
       this.$i18n.locale = type
+      // localStorage.setItem('lang',type)
     }
   },
   mounted() {
     this.messageDown();
+         // 滚动到顶部 加载更多
+    let chatDoc = this.$refs.chatInfo
+    chatDoc.addEventListener('scroll',(e)=>{
+        if( (e.target.scrollTop === 0 && 
+         e.target.scrollHeight >  e.target.offsetHeight) && 
+         !(this.messages.length>= this.count) && !this.isMore
+          ){
+           
+      
+        this.$emit('getLog',e)
+      }
+    })
+
   },
 };
 </script>

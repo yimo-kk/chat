@@ -1,7 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import { getChatListData, getUsersData } from "@/api/chat.js";
-import { getStorage, setStorage } from "@/libs/utils.js";
 import { Toast} from "vant";
 Vue.use(Vuex).use(Toast);
 
@@ -103,7 +102,7 @@ export default new Vuex.Store({
         await getUsersData(data)
           .then(result => {
             commit("setUserInfo", result.data);
-            setStorage("userInfo", result.data);
+            // setStorage("userInfo", result.data);
             resolve(result.data);
           })
           .catch(err => {

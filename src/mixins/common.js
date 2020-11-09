@@ -45,9 +45,9 @@ export default function() {
         sendText(newVal){
           if(!newVal)return
           var str = conversion(newVal)
-          if (str.length >= 128) {
+          if (str.length >= 188) {
             this.$toast(this.$t('overLimit'))
-            var string = str.slice(0, 128)
+            var string = str.slice(0, 188)
             var arr = string.split('[')
             arr.forEach((item,index)=>{
               if(index >0 &&item.indexOf(']') === -1 ){
