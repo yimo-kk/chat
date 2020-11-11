@@ -12,9 +12,9 @@ export default {
   // mixins: [common()],
   methods: {},
   mounted () {
-  let ip = returnCitySN["cip"]; // ip
-  let address = returnCitySN["cname"]; // 地址
-  this.$store.commit('setUserIp',{ip:ip,address:address})
+  // let ip = returnCitySN["cip"]; // ip
+  // let address = returnCitySN["cname"]; // 地址
+  // this.$store.commit('setUserIp',{ip:ip,address:address})
   let that = this
   document.addEventListener('click',()=>{
      that.$store.commit('closeTitleScrolling','妮姬客服')

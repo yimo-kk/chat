@@ -12,7 +12,6 @@ export default new Vuex.Store({
     code: null,
     uid:  null,
     gid:  null,
-    userIp: null,
     setPlaying:false, // 新消息声音提示 
     timeOut:null,
     kefu_code:'',
@@ -51,9 +50,6 @@ export default new Vuex.Store({
     },
     setGroupId(state, data) {
       state.gid = data;
-    },
-    setUserIp(state, data) {
-      state.userIp = data;
     },
     setKefu_code(state, data){
       state.kefu_code = data;

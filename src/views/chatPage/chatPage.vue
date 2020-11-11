@@ -247,7 +247,7 @@ export default {
     score(data) {
       data.endChat = true;
       data.isScore = false;
-      data.scoreNum = 1; //评分
+      data.scoreNum = 0; //评分
       data.scoreMessage = ""; //评分内容
       this.messages.push(data);
     }
@@ -398,7 +398,7 @@ export default {
         kefu_code:JSON.parse(getStorage(this.code))[this.username],
         code: this.userInfo.seller.seller_code,
         content: this.messages[index].scoreMessage,
-        star: this.messages[index].scoreNum
+        star: this.messages[index].scoreNum === 0 ? 1 : this.messages[index].scoreNum
       })
         .then(result => {
           this.messages[index].isScore = true;
@@ -522,9 +522,9 @@ export default {
   justify-content: center;
   .is_group_user_msg {
     background-color: #fff;
-    width: 180px;
+    width: 18rem;
     height: 55px;
-    border-radius: 10px;
+    border-radius: .8rem;
     text-align: center;
     line-height: 55px;
   }

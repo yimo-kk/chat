@@ -32,6 +32,10 @@ export default function() {
         drawRecordId: null,
         oCanvas: null,
         ctx: null,
+        userIp:{
+          ip:'',
+          address:''
+        }
       };
     },
     watch: {
@@ -61,7 +65,7 @@ export default function() {
         },
       },
       computed: {
-        ...mapState(["userInfo", "code", "gid", "username", "userIp",'kefu_code']),
+        ...mapState(["userInfo", "code", "gid", "username",'kefu_code']),
         isIE(){
           return !isIE()
         }
@@ -70,8 +74,6 @@ export default function() {
         getUserInfo(callback) {
             this.loading = true
             let params ={
-              login_ip: this.userIp.ip,
-              area: this.userIp.address,
               username: this.$route.query.username || this.username ,
               is_tourist: this.$route.query.username ? 2 : 0
             }
@@ -81,6 +83,10 @@ export default function() {
             this.$store
               .dispatch("getUsersData",params )
               .then((res) => {
+                this.userIp={
+                  ip:res.data.ip,
+                  address:res.data.area
+                }
                if(res.code === 2 || res.code === 6){
                  res.state = true
                  this.isGroupUser = res

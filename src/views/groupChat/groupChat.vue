@@ -200,6 +200,7 @@ export default {
       page:1,
       count:0,
       isMore:false,
+      is_invite:null
     };
   },
   computed: {
@@ -257,14 +258,14 @@ export default {
       data.kefu_name = "kefu";
       this.messages.push(data);
     },
-    //禁言个人
+    // 禁言个人
     userForbid(data) {
       if (data.from_name == this.$store.state.userInfo.data.username) {
         data.kefu_name = "kefu";
         this.messages.push(data);
       }
     },
-    //解禁个人
+    // 解禁个人
     removeforbid(data) {
       data.kefu_name = "kefu";
       this.messages.push(data);
@@ -276,6 +277,27 @@ export default {
     // 离开聊天室
     userLeave(data){
         this.groupAddOrLeave(data,'leave')
+    },
+    // 踢出群聊
+    kickGroup(data) {
+        data.kefu_name = "kefu";
+        this.messages.push(data);
+      if (data.username == this.$store.state.userInfo.data.username) {
+        this.isGroupUser= {
+          state: true,
+          message: this.$t('noMember')
+        }
+      }
+    },
+    // 解散群
+    delGroup(data){
+      if(data.group_id == this.gid){
+        this.isGroupUser= {
+          state: true,
+          message: this.$t('disband')
+        }
+      }
+      
     }
   },
   methods: {
@@ -292,6 +314,7 @@ export default {
         seller_code: this.userInfo.seller.seller_code,
         state: 0,
         type: this.sendType,
+        is_invite:this.is_invite,
         from_ip: this.userIp.ip
       };
       let sendMessage = JSON.parse(JSON.stringify(my_send));
@@ -306,7 +329,7 @@ export default {
       this.sendType = 1;
       if (!isImage(file.file.type)) {
         this.$toast({
-          message: "请正确选择图片！",
+          message: this.$t('selectImg'),
           position: "top"
         });
       } else {
@@ -317,7 +340,7 @@ export default {
           },
           error => {
             // 压缩出错
-            this.$toast('发送失败！')
+            this.$toast(this.$t('sendErr'))
           }
         );
       }
@@ -330,12 +353,18 @@ export default {
           this.count = result.data.count
           this.on_file = result.data.on_file
           this.on_voice = result.data.on_voice
+          
           if (result.data.code == 1 || result.data.code == -1 ) {
             this.isGroupUser.state = true
             this.isGroupUser.message = result.data.msg
             return;
           } else {
-            
+             this.$socket.emit("group", {
+              username: this.username,
+              group_id: this.gid,
+              seller_code:this.userInfo.seller.seller_code
+            });
+            this.is_invite = result.data.group.is_invite
             this.chatTitle = result.data.group_name;
            let array = result.data.data.map(item => {
               item.type == 3 && (item.play = false);
@@ -359,6 +388,7 @@ export default {
           }
         })
         .catch(err => {
+          console.log(err)
           this.loading = false
           this.$toast(err.msg);
         });
@@ -420,7 +450,7 @@ export default {
       this.isMore = true
       this.page ++
       let scrollH = this.$refs.GroupChatInfo.$refs.chatInfo.scrollHeight
-     this.getGroupChatLog({
+      this.getGroupChatLog({
         page:this.page,
         group_id: this.gid,
         seller_code: this.userInfo.seller.seller_code,
@@ -439,11 +469,6 @@ export default {
     this.getUserInfo(()=>{
       this.getNewsData(this.userInfo.seller.seller_code);
       this.getGroupList(this.gid);
-      this.$socket.emit("group", {
-        username: this.username,
-        group_id: this.gid,
-        seller_code:this.userInfo.seller.seller_code
-      });
       this.getGroupChatLog({
         page:1,
         group_id: this.gid,
@@ -472,9 +497,9 @@ export default {
   justify-content: center;
   .is_group_user_msg {
     background-color: #fff;
-    width: 180px;
+    width: 18rem;
     height: 55px;
-    border-radius: 10px;
+    border-radius: .8rem;
     text-align: center;
     line-height: 55px;
   }

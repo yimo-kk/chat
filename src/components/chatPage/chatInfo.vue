@@ -58,7 +58,7 @@
           <img class="head_portrait" :src="item.from_avatar" alt />
           <div style="margin: 0 10px;" class="chat_content_text_left">
             <span v-if="name" style="font-size: 12px;color:#ccc">{{item.from_name}}</span>
-            <span style="white-space: pre-line" v-if="item.type=== 0" class="content left">{{item.content || item.message }}</span>
+            <span style="white-space: pre-line;word-break: break-word;" v-if="item.type=== 0" class="content left">{{item.content || item.message }}</span>
             <p v-else-if="item.type=== 1" class="content left" style="padding:4px">
               <img
                 @load='loadImg' 
@@ -69,7 +69,7 @@
               />
             </p>
             <div
-              title="点击下载文件"
+              :title="$t('download')"
               v-else-if="item.type=== 2"
               class="left fileView"
               style="display: flex;
@@ -102,7 +102,7 @@
               ></Audio>
             </div>
             <div v-if="item.endChat" class="api_list score">
-              <p class="score_title">请您对本次服务进行评分</p>
+              <p class="score_title">{{$t('score')}}</p>
               <van-rate
                 v-model="item.scoreNum"
                 void-icon="star"
@@ -115,7 +115,7 @@
                 autosize
                 type="textarea"
                 maxlength="50"
-                placeholder="欢迎给我们的服务提意见~"
+                :placeholder="$t('opinion')"
                 show-word-limit
                 :readonly="item.isScore"
               />
@@ -124,11 +124,11 @@
                 @click="submit(index,item.isScore)"
                 :disabled="item.isScore"
                 size="mini"
-              >{{item.isScore ? '已评价':'评价'}}</van-button>
+              >{{item.isScore ? $t('Evaluated'):$t('Evaluation')}}</van-button>
             </div>
             <div v-if="item.isApi">
               <div v-if="item.apiList && item.apiList.length" class="api_list">
-                <span class="select_or_view">请选择/查看</span>
+                <span class="select_or_view">{{$t('viewOrSelect')}}</span>
                 <p
                   v-for="(val,apiIndex) in item.apiList"
                   :key="apiIndex"
@@ -151,7 +151,7 @@
         <div class="record record_right" v-else-if="item.from_name == username&&!item.kefu_name ">
           <div style="margin: 0 10px;" class="chat_content_text_right">
             <p v-if="name" style="text-align: end;font-size: 12px;color:#ccc">{{username}}</p>
-            <span style="white-space: pre-line" v-if="item.type=== 0" class="content right">{{item.message || item.content}}</span>
+            <span style="white-space: pre-line;word-break: break-word;" v-if="item.type=== 0" class="content right">{{item.message || item.content}}</span>
             <p v-else-if="item.type=== 1" class="content right" style="padding:4px">
               <img
               @load='loadImg' 
@@ -162,7 +162,7 @@
               />
             </p>
             <div
-              title="点击下载文件"
+              :title="$t('download')"
               v-else-if="item.type=== 2"
               class="right fileView"
               style="display: flex;

@@ -14,7 +14,15 @@ module.exports = {
   service:'Official customer service',
   fileErr:'The file has expired!',
   groupMember:'Group member',
-  announcement:'Announcement'
+  announcement:'Announcement',
+  download:'Click to download file',
+  score:'Please rate this service',
+  opinion:'Welcome to comment on our services',
+  Evaluation:'Evaluation',
+  Evaluated:'Evaluated',
+  viewOrSelect:'Please select/view',
+  noMember: 'You are not a member of the current group!',
+  disband: 'The administrator canceled the current group chat!'
 }
   
   
