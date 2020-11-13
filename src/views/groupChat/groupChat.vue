@@ -54,7 +54,8 @@
                 ></van-icon>
               </van-uploader>
               <!-- 由商家控制 -->
-              <van-icon v-if="isIE && on_voice "
+               <van-icon v-if="(isAudio&isIE)&&on_voice" @click="recordService" name="comment-o" style="padding:0 1px" size="1.8rem" />
+              <van-icon v-else-if="isIE && on_voice "
                 class="iconfont font_size"
                 size="1.8rem"
                 class-prefix="icon"
@@ -388,7 +389,6 @@ export default {
           }
         })
         .catch(err => {
-          console.log(err)
           this.loading = false
           this.$toast(err.msg);
         });
@@ -466,7 +466,8 @@ export default {
   created() {
   },
   mounted() {
-    this.getUserInfo(()=>{
+     this.judgment().then(()=>{
+      this.getUserInfo(()=>{
       this.getNewsData(this.userInfo.seller.seller_code);
       this.getGroupList(this.gid);
       this.getGroupChatLog({
@@ -476,7 +477,7 @@ export default {
         uid: this.userInfo.data.uid
       });
     });
-   
+    })
   }
 };
 </script>

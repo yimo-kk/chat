@@ -12,16 +12,13 @@ export default new Vuex.Store({
     code: null,
     uid:  null,
     gid:  null,
-    setPlaying:false, // 新消息声音提示 
     timeOut:null,
     kefu_code:'',
     tit:'你有新的消息',
     num:0
   },
   mutations: {
-    setPlaying(state, bool){
-      state.isPlaying = bool
-    },
+    
     setMessageList(state, list) {
       state.messageList = [
         {
@@ -107,19 +104,21 @@ export default new Vuex.Store({
       });
     },
     playPromptVuex({ state, commit }) {
+      let isPlaying=false
       let lastRunTime = Date.now();
       let audio = document.querySelector("#audio");
-      if (!state.isPlaying) {
+      if (!isPlaying) {
         audio.play()
-        commit('setPlaying',true )
+        isPlaying = true
       }
       let timeOut = setTimeout(() => {
         let currentTime = Date.now();
-        if (currentTime - lastRunTime > 1000) {
+        console.log(currentTime - lastRunTime,777)
+        if (currentTime - lastRunTime >= 980) {
           if (state.isPlaying) {
             audio.currentTime = 0;
             audio.pause();
-            commit('setPlaying',false )
+            isPlaying = false
           }
         }
         clearTimeout(timeOut);

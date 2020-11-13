@@ -28,6 +28,12 @@ const routes = [
     name: "PrivateChat",
     component: () =>
       import(/* webpackChunkName: "privateChat" */ "../views/privateChat/privateChat.vue")
+  },
+  {
+    path: "/message",
+    name: "Message",
+    component: () =>
+      import(/* webpackChunkName: "Message" */ "../views/message/index.vue")
   }
 ];
 

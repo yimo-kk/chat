@@ -202,6 +202,9 @@
         <div v-if="item.kefu_name ==='kefu'" class="flex_center" style="marginBottom:10px">
           <p style="color:#ccc;fontSize:0.8rem">{{item.message}}</p>
         </div>
+         <div v-if="item.kefu_name ==='message'" class="flex_center" style="marginBottom:10px">
+          <p style="color:#ccc;fontSize:0.8rem">{{item.message}}</p><a href="javascript:void(0)" @click="message">{{$t('pleaseMessage')}}</a>
+        </div>
       </div>
     </div>
     <!-- pc端 -->
@@ -287,7 +290,6 @@ export default {
       isMoreAnnouncement:false,
       newList:[],
       localeval:'zh-CN',
-
     };
   },
   computed: {
@@ -424,6 +426,10 @@ export default {
       this.localeval=type
       this.$i18n.locale = type
       // localStorage.setItem('lang',type)
+    },
+     message(){
+       localStorage.setItem('seller_code',this.userInfo.seller.seller_code)
+      this.$router.push({name:"Message"})
     }
   },
   mounted() {

@@ -15,7 +15,7 @@ import i18n from './i18n';
 // 移动端调试
 import Vconsole from "vconsole";
 let vConsole = new Vconsole();
-import { userDecode } from "@/api/chat.js";
+// import { userDecode } from "@/api/chat.js";
 import {  setStorage, getStorage,getQueryString,segmentation } from "@/libs/utils";
 
 // vant
@@ -31,6 +31,8 @@ import {
   Rate,
   Button,
   NoticeBar,
+  Form,
+  Empty,
   Loading 
 } from "vant";
 Vue.use(Field)
@@ -43,7 +45,9 @@ Vue.use(Field)
   .use(Rate)
   .use(Button)
   .use(NoticeBar)
-  .use(Loading )
+  .use(Loading)
+  .use(Form)
+  .use(Empty)
   .use(Sticky);
 // 全局过滤器
 import filters from "./libs/filters.js";
@@ -55,65 +59,83 @@ Vue.config.productionTip = false;
 Vue.prototype.$toast = Toast;
 Vue.prototype.$SocketIO = SocketIO;
 Vue.prototype.$dayjs = dayjs; //可以全局使用dayjs
-let u = getQueryString('u')
-let code = getQueryString('code')
-try {
-  userDecode({u,code})
-  .then((result) => {
-    if(!result.data.data){
-      Dialog.alert({
-        message: '商家不存在或参数错误！',
-        showConfirmButton:false,
-        showCancelButton:false
-      })
-      return
-    }
-    let data = segmentation(result.data.data)
-    let obj={}
-    if(getStorage(code)){
-      obj =JSON.parse(getStorage(code))
-      if(!obj[data.username]){
-        obj[data.username] = ''
-      }
-      setStorage(code, JSON.stringify(obj));
-    }else {
-      obj[data.username]=''
-      setStorage(code, obj);
-    }
-    store.commit("setUsername", data.username);
-    store.commit("setCode", code);
-    data.group_id && 
-    store.commit("setGroupId", data.group_id);
-    let socket = {
-      path: data.group_id ? `/socket.io/?username=${data.username}&code=${code}&group_id=${data.group_id}&`:`/socket.io/?username=${data.username}&code=${code}&`,
-      transports: ['websocket', 'xhr-polling', 'jsonp-polling']
-    }
-    if (/Firefox\/\s/.test(navigator.userAgent)){
-      socket.transports=['xhr-polling']
-      } 
-      else if (/MSIE (\d+.\d+);/.test(navigator.userAgent)){
-        socket.transports=['jsonp-polling']
-      }
-    Vue.use(
-      new VueSocketIO({
-        debug: true,
-        connection: SocketIO.connect(`wss://server.nikidigital.net`,socket ),
-        store
-      })
-    );
-    new Vue({
-      router,
-      i18n,
+Vue.use(
+    new VueSocketIO({
+      ebug: true,
+      connection: SocketIO.connect(`wss://server.nikidigital.net`),
       store,
-      render: h => h(App)
-    }).$mount("#app");
-  })
-} catch (error) {
-  new Vue({
+      transports: ["websocket"],
+        })
+      );
+new Vue({
     router,
+    i18n,
     store,
     render: h => h(App)
   }).$mount("#app");
-}
 
- 
+
+
+// if(location.href.split('?')[0].split('/')[location.href.split('?')[0].split('/').length-1] == 'message'){}else {
+  // let u = getQueryString('u')
+  // let code = getQueryString('code')
+  // try {
+  //   userDecode({u,code})
+  //   .then((result) => {
+  //     if(!result.data.data){
+  //       Dialog.alert({
+  //         message: '商家不存在或参数错误！',
+  //         showConfirmButton:false,
+  //         showCancelButton:false
+  //       })
+  //       return
+  //     }
+  //     let data = segmentation(result.data.data)
+  //     let obj={}
+  //     if(getStorage(code)){
+  //       obj =JSON.parse(getStorage(code))
+  //       if(!obj[data.username]){
+  //         obj[data.username] = ''
+  //       }
+  //       setStorage(code, JSON.stringify(obj));
+  //     }else {
+  //       obj[data.username]=''
+  //       setStorage(code, obj);
+  //     }
+  //     store.commit("setUsername", data.username);
+  //     store.commit("setCode", code);
+  //     data.group_id && 
+  //     store.commit("setGroupId", data.group_id);
+  //     let socket = {
+  //       path: data.group_id ? `/socket.io/?username=${data.username}&code=${code}&group_id=${data.group_id}&`:`/socket.io/?username=${data.username}&code=${code}&`,
+  //       transports: ['websocket', 'xhr-polling', 'jsonp-polling']
+  //     }
+  //     if (/Firefox\/\s/.test(navigator.userAgent)){ 
+  //       socket.transports=['xhr-polling']
+  //       } 
+  //       else if (/MSIE (\d+.\d+);/.test(navigator.userAgent)){
+  //         socket.transports=['jsonp-polling']
+  //       }
+  //     Vue.use(
+  //       new VueSocketIO({
+  //         debug: true,
+  //         connection: SocketIO.connect(`wss://server.nikidigital.net`,socket ),
+  //         store
+  //       })
+  //     );
+  //     new Vue({
+  //       router,
+  //       i18n,
+  //       store,
+  //       render: h => h(App)
+  //     }).$mount("#app");
+  //   })
+  // }catch{
+  //   new Vue({
+  //     router,
+  //     i18n,
+  //     store,
+  //     render: h => h(App)
+  //   }).$mount("#app");
+  // }
+   

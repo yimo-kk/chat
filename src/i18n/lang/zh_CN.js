@@ -22,7 +22,19 @@ module.exports = {
   Evaluated:'已评价',
   viewOrSelect:'请选择/查看',
   noMember:'你不是当前群成员！',
-  disband:'管理员解散了当前群聊！'  
+  disband:'管理员解散了当前群聊！',
+  message:'你的留言',
+  mailbox:'邮箱',
+  yourEmail:'请输入邮箱',
+  phone:'手机号码',
+  yourPhone:'请输入手机号码',
+  messages:'留言',
+  messageContent:'请输入留言',
+  submit:'提交',
+  messageSuccess:'留言成功',
+  correctNumber:'请输入正确的手机号码！',
+  correctEmail:'请输入正确的邮箱！',
+  pleaseMessage:'请留言!'
 }
   
   

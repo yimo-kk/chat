@@ -148,3 +148,26 @@ export function segmentation(string){
   }
   return obj
 }
+/*
+*
+* @param str 传入被校验手机号身份证
+* @param type 校验类型 'phone','idCard'
+* @returns {*} false校验失败， true校验成功
+*/
+export function check (str, type) {
+ let types = {
+   phone () { // 校验手机号
+     return this.typeCheckFn( /^1\d{10}$/.test(str))
+   },
+   idCard () { // 校验邮箱
+     let checkEmail = /^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$/
+     return this.typeCheckFn(checkEmail.test(str))
+   },
+   typeCheckFn (reg) { // 校验函数 reg校验规则
+     if (reg) return true
+     return false
+   },
+ }
+
+ return types[type]()
+}

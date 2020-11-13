@@ -1,9 +1,16 @@
 import {
   getNews,
   serviceSendChatFile,
-  getNewsList
+  getNewsList,
+  userDecode
 } from "@/api/chat.js";
-import { isIE,conversion,conversionFace } from "@/libs/utils.js";
+import { isIE,
+  conversion,
+  conversionFace, 
+  setStorage, 
+  getStorage,
+  getQueryString,
+  segmentation } from "@/libs/utils.js";
 const appData = require("@/assets/emojis.json");
 import { mapState } from "vuex";
 import Recorder from "js-audio-recorder";
@@ -376,6 +383,44 @@ export default function() {
                 this.loading=false
               });
         },
+        // 判断是否有商家code等参数
+        judgment(fn){
+          return  new Promise(async (resolve, reject) => {
+            let u = getQueryString('u')
+            let code = getQueryString('code')
+           await userDecode({u,code})
+            .then((result) => {
+              if(!result.data.data){
+                this.Dialog.alert({
+                  message: '商家不存在或参数错误！',
+                  showConfirmButton:false,
+                  showCancelButton:false
+                })
+                return
+              }
+              let data = segmentation(result.data.data)
+              let obj={}
+              if(getStorage(code)){
+                obj =JSON.parse(getStorage(code))
+                if(!obj[data.username]){
+                  obj[data.username] = ''
+                }
+                setStorage(code, JSON.stringify(obj));
+              }else {
+                obj[data.username]=''
+                setStorage(code, obj);
+              }
+              this.$store.commit("setUsername", data.username);
+              this.$store.commit("setCode", code);
+              data.group_id && 
+              this.$store.commit("setGroupId", data.group_id);
+              resolve()
+            })
+            .catch(err => {
+              reject(err);
+            });
+          }) 
+        }
     },
     created() {
         // this.code != this.$route.query.code &&

@@ -22,7 +22,19 @@ module.exports = {
   Evaluated:'Evaluated',
   viewOrSelect:'Please select/view',
   noMember: 'You are not a member of the current group!',
-  disband: 'The administrator canceled the current group chat!'
+  disband: 'The administrator canceled the current group chat!',
+  message:'Your message',
+  mailbox:'Email',
+  yourEmail:'please input your email',
+  phone:'mobile phone number',
+  yourPhone:'Please enter the phone number',
+  messages:'leave a message',
+  messageContent:'Please enter a message',
+  submit:'Submit',
+  messageSuccess:'Message successfully',
+  correctNumber:'Please enter the correct phone number!',
+  correctEmail:'please enter your vaild email!',
+  pleaseMessage:'Please leave a message!'
 }
   
   

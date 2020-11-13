@@ -1,0 +1,54 @@
+/**当屏幕宽度大于540使用的样式**/
+@media screen and (min-width:540px) {
+    .buttom{
+        width: 10rem;
+    }
+    .submit_box{
+        margin-top: 1rem;
+        text-align:center  
+    }
+    .message_content{
+        display: flex;
+        justify-content: center;
+    }
+    .my_form{
+        width: 30rem;
+    }
+}
+
+/**当屏幕宽度小于540使用的样式**/
+@media screen and (max-width:540px) {
+    .submit_box{
+        margin-top: 2rem;
+        text-align:center  
+    }
+    .buttom{
+        width: 10rem;
+    }
+
+}
+
+.message {
+    // background-color: #f5f5f5;
+    height: 100%;
+    .message_header {
+        background-color: #02c0fe;
+        min-height: 50px;
+        font-size: 1.2rem;
+        padding-left: 1rem;
+        position: relative;
+        .go_back{
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+        }
+    }
+    .message_content{
+        margin-top: 2rem;
+    }
+    /deep/ .van-cell__value {
+        padding: 3px;
+        border: 1px solid #f3f3f3 !important;
+      }
+}

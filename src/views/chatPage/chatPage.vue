@@ -43,7 +43,8 @@
             >
               <van-icon class="iconfont font_size" size="1.8rem" class-prefix="icon" name="tupian"></van-icon>
             </van-uploader>
-            <van-icon v-if="isIE"
+            <van-icon v-if="isAudio&isIE" @click="recordService" name="comment-o" style="padding:0 1px" size="1.8rem" />
+            <van-icon v-else-if="isIE"
               class="iconfont font_size"
               size="1.8rem"
               class-prefix="icon"
@@ -220,15 +221,18 @@ export default {
       }, 
     //有客服接待通知
     prompt(data) {
-      data.kefu_name = "kefu";
-      this.messages.push(data);
-       this.$store.commit('setKefu_code',data.kefu_code)
-      let obj={}
-      if(getStorage(this.$route.query.code)){
-        obj = JSON.parse(getStorage(this.$route.query.code))
-        obj[this.username] = data.kefu_code
-         setStorage( this.$route.query.code, obj );
-      }
+      data.code === 6 ?
+        data.kefu_name = "message":data.kefu_name = "kefu"
+        this.messages.push(data);
+        this.$store.commit('setKefu_code',data.kefu_code)
+        let obj={}
+        if(getStorage(this.$route.query.code)){
+          obj = JSON.parse(getStorage(this.$route.query.code))
+          obj[this.username] = data.kefu_code
+          setStorage( this.$route.query.code, obj );
+        }
+
+     
     },
     // 客服给用户发送消息
     serviceMsg(data) {
@@ -241,7 +245,18 @@ export default {
       data.type === 3 && (data.message.play = false);
       data.type === 0 &&
         (data.message = conversionFace(data.content || data.message));
+       data.create_time = this.$dayjs().format('YYYY-MM-DD HH:mm:ss')
       this.messages.push(data);
+    },
+    userMsg(data){
+      let message = JSON.parse(JSON.stringify(data))
+      if(data.from_name === this.userInfo.data.username ){
+         data.type === 3 && (message.message.play = false);
+           data.type === 0 &&
+        (message.message = conversion(data.message));
+        message.create_time = data.createtime
+        this.messages.push(data);
+      }
     },
     // 客服关闭会话,提示评分
     score(data) {
@@ -269,10 +284,10 @@ export default {
         from_ip: this.userIp.ip
       };
       let sendMessage = JSON.parse(JSON.stringify(my_send));
-      this.sendType === 3 && (my_send.message.play = false);
-      this.sendType === 0 &&
-        (sendMessage.message = conversion(my_send.message));
-      this.messages.push(my_send);
+      // this.sendType === 3 && (my_send.message.play = false);
+      // this.sendType === 0 &&
+      //   (sendMessage.message = conversion(my_send.message));
+      // this.messages.push(my_send);
       this.$socket.emit("message", sendMessage);
       this.sendText = "";
       this.faceShow = false;
@@ -481,12 +496,13 @@ export default {
             }) 
           })
     },
+   
   },
   mounted() {
-    this.getUserInfo(() => {
+    this.judgment().then(()=>{
+      this.getUserInfo(() => {
         this.reception();
         this.getNewsData(this.userInfo.seller.seller_code);
-         
         this.getServiceChatMessage({
         page:1,
         username: this.userInfo.data.username,
@@ -494,12 +510,13 @@ export default {
       },()=>{
          this.getServiceSendData( this.code);
       });
-     
         // Pc端获取列表
         if (!this.isButtom) {
           this.getQuestion(this.userInfo.seller.seller_code);
         }
-      });
+      })
+    })
+     
     this.startCanvas();
   },
 };
