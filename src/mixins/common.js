@@ -391,7 +391,7 @@ export default function() {
            await userDecode({u,code})
             .then((result) => {
               if(!result.data.data){
-                this.Dialog.alert({
+                this.$dialog.alert({
                   message: '商家不存在或参数错误！',
                   showConfirmButton:false,
                   showCancelButton:false

@@ -140,6 +140,7 @@ import {
   praise,
   getApiList,
   getApiById,
+  // getNoResponse,
   getQuestionList
 } from "@/api/chat.js";
 import { ImagePreview } from "vant";
@@ -205,7 +206,15 @@ export default {
     },
     // disconnect:检测socket断开连接
     disconnect(data) {
+      let that = this
       console.log('断开')
+      this.$dialog.confirm({
+          title: '提示',
+          message: '网络异常断开连接，请刷新！',
+        })
+      .then(() => {
+        this.$router.go(0)
+      })
     },
     reconnect(data) {
       console.log('重连')
@@ -221,8 +230,7 @@ export default {
       }, 
     //有客服接待通知
     prompt(data) {
-      data.code === 6 ?
-        data.kefu_name = "message":data.kefu_name = "kefu"
+        data.kefu_name = "kefu"
         this.messages.push(data);
         this.$store.commit('setKefu_code',data.kefu_code)
         let obj={}
@@ -231,8 +239,12 @@ export default {
           obj[this.username] = data.kefu_code
           setStorage( this.$route.query.code, obj );
         }
-
-     
+    },
+    // 客服繁忙 和其他提示
+    processing(data){
+      data.code === 6 ?
+        data.kefu_name = "message":data.kefu_name = "kefu"
+      this.messages.push(data);
     },
     // 客服给用户发送消息
     serviceMsg(data) {
@@ -443,6 +455,13 @@ export default {
                 from_name: this.$t('service'),
                 from_avatar: this.profilePhoto
               });
+            if(sessionStorage.getItem('message')){
+              this.messages.push({
+                kefu_name:"kefu",
+                message:'感谢你的留言，请等待客服联系你'
+              })
+              sessionStorage.romoveItem('message')
+            }
           } else {
             this.$toast(this.$t('timeOut'));
           }
@@ -496,13 +515,41 @@ export default {
             }) 
           })
     },
+    // 轮询查询是否长时间客服没回复
+    // polling(){
+    //   getNoResponse({
+    //     seller_code:this.userInfo.seller.seller_code,
+    //     uid:this.userInfo.data.uid 
+    //   })
+    //   .then((result) => {
+    //     console.log(result.data,2222)
+    //     if(result.data){
+    //       this.messages.push({
+    //           kefu_name: "kefu",
+    //           message: '客服繁忙中,请稍微等待一下'
+    //         });
+    //     }
+    //   }).catch((err) => {
+    //     console.log(err)
+    //   });
+    // }
    
   },
   mounted() {
-    this.judgment().then(()=>{
+    this.judgment()
+    .then(()=>{
       this.getUserInfo(() => {
         this.reception();
         this.getNewsData(this.userInfo.seller.seller_code);
+        // 轮询查找
+        setInterval(()=>{
+          this.$socket.emit("message", {
+            cmd:'outtime-processing',
+            username:this.username,
+            seller_code:this.userInfo.seller.seller_code,
+            uid:this.userInfo.data.uid
+          });
+        },5000)
         this.getServiceChatMessage({
         page:1,
         username: this.userInfo.data.username,
@@ -514,6 +561,13 @@ export default {
         if (!this.isButtom) {
           this.getQuestion(this.userInfo.seller.seller_code);
         }
+      })
+    })
+    .catch(err=>{
+      this.$dialog.alert({
+        message: '商家不存在或参数错误！',
+        showConfirmButton:false,
+        showCancelButton:false
       })
     })
      

@@ -104,6 +104,7 @@
             <div v-if="item.endChat" class="api_list score">
               <p class="score_title">{{$t('score')}}</p>
               <van-rate
+              style="padding：0 1rem"
                 v-model="item.scoreNum"
                 void-icon="star"
                 color="#ffd21e"
@@ -203,7 +204,7 @@
           <p style="color:#ccc;fontSize:0.8rem">{{item.message}}</p>
         </div>
          <div v-if="item.kefu_name ==='message'" class="flex_center" style="marginBottom:10px">
-          <p style="color:#ccc;fontSize:0.8rem">{{item.message}}</p><a href="javascript:void(0)" @click="message">{{$t('pleaseMessage')}}</a>
+          <p style="color:#ccc;fontSize:0.8rem">{{item.message}}</p><a style="fontSize:0.8rem" href="javascript:void(0)" @click="message">{{$t('pleaseMessage')}}</a>
         </div>
       </div>
     </div>

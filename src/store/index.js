@@ -113,7 +113,6 @@ export default new Vuex.Store({
       }
       let timeOut = setTimeout(() => {
         let currentTime = Date.now();
-        console.log(currentTime - lastRunTime,777)
         if (currentTime - lastRunTime >= 980) {
           if (state.isPlaying) {
             audio.currentTime = 0;

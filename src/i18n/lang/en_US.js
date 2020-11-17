@@ -31,7 +31,7 @@ module.exports = {
   messages:'leave a message',
   messageContent:'Please enter a message',
   submit:'Submit',
-  messageSuccess:'Message successfully',
+  messageSuccess:'Thank you for your message, please wait for the customer service to contact you',
   correctNumber:'Please enter the correct phone number!',
   correctEmail:'please enter your vaild email!',
   pleaseMessage:'Please leave a message!'

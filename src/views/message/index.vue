@@ -66,9 +66,9 @@
     </van-form>
     </div>
   </div>
-  <div v-else>
+  <!-- <div v-else>
     <van-empty :description="$t('messageSuccess')"></van-empty>
-  </div>
+  </div> -->
   </div>
 </template>
 
@@ -96,11 +96,18 @@ export default {
   methods: {
     onSubmit(data){
       if(this.userMessage.leave_phone && !check(data.phone,'phone')){
-        this.$toast(this.$t('correctNumber'))
+        this.$toast({
+          message: this.$t('correctNumber'),
+          position: 'top',
+        })
+        
         return
       }
       if(this.userMessage.leave_email && !check(data.mailbox,'idCard')){
-        this.$toast(this.$t('correctEmail'))
+        this.$toast({
+           message: this.$t('correctEmail'),
+          position: 'top',
+        })
         return
       }
       userLeave({
@@ -111,10 +118,9 @@ export default {
         username:this.username
       })
       .then((result) => {
-        // this.$router.go(-1)
-        this.messageState= false
-        //  localStorage.removeItem('seller_code')
-        //  this.$toast(msg)
+        // this.messageState= false
+        this.$router.go(-1)
+        sessionStorage.setItem('message',true)
       }).catch((err) => {
         console.log(err)
         this.$toast(err.msg)

@@ -18,10 +18,11 @@
           :groupNum="groupMember.num" 
           :announcement="announcement"
           @playRecord="playRecord"
+          @pcCancel="pcCancel"
           :isMore='isMore'
           :count='count'
           @getLog='getLog'
-        ></ChatInfo>
+        ></ChatInfo> 
         <!-- 聊天输入框 -->
         <div class="input_tab">
           <div class="input_box">
@@ -213,6 +214,19 @@ export default {
     // connect:查看socket是否渲染成功
     connect() {
     },
+      // disconnect:检测socket断开连接
+    disconnect(data) {
+      let that = this
+      console.log('断开')
+      this.$dialog.confirm({
+          title: '提示',
+          message: '网络异常断开连接，请刷新！',
+        })
+      .then(() => {
+        this.$router.go(0)
+        // on confirm
+      })
+    },
     reconnect(data) {
       console.log('重连')
       this.$socket.emit("group", {
@@ -249,10 +263,10 @@ export default {
       }
     },
     removeblack(data) {
-      if (data.username == this.$store.state.userInfo.data.username) {
+      // if (data.username == this.$store.state.userInfo.data.username) {
         data.kefu_name = "kefu";
         this.messages.push(data);
-      }
+      // }
     },
     // 禁言全局
     groupForbid(data) {
@@ -278,6 +292,19 @@ export default {
     // 离开聊天室
     userLeave(data){
         this.groupAddOrLeave(data,'leave')
+    },
+    // 客服上线
+    kefuOnline(data){
+        this.groupAddOrLeave(data,'add','kefu')
+    },
+    // 客服离开
+    kefuLeave(data){
+        this.groupAddOrLeave(data,'leave')
+    },
+    // 管理员拉人进群
+    pullUsersGroup(data){
+      this.groupAddOrLeave(data,'add')
+   
     },
     // 踢出群聊
     kickGroup(data) {
@@ -354,7 +381,6 @@ export default {
           this.count = result.data.count
           this.on_file = result.data.on_file
           this.on_voice = result.data.on_voice
-          
           if (result.data.code == 1 || result.data.code == -1 ) {
             this.isGroupUser.state = true
             this.isGroupUser.message = result.data.msg
@@ -363,7 +389,8 @@ export default {
              this.$socket.emit("group", {
               username: this.username,
               group_id: this.gid,
-              seller_code:this.userInfo.seller.seller_code
+              seller_code:this.userInfo.seller.seller_code,
+              headimg:this.userInfo.data.headimg
             });
             this.is_invite = result.data.group.is_invite
             this.chatTitle = result.data.group_name;
@@ -395,7 +422,7 @@ export default {
     },
     // 获取群成员
     getGroupList(group_id) {
-      getGroupList({ group_id }) 
+      getGroupList({ group_id,seller_code:  this.userInfo.seller.seller_code}) 
         .then(result => {
           result.data.data = Object.values( result.data.data)
           this.groupMember = result.data
@@ -404,20 +431,51 @@ export default {
           this.$toast(this.$t('timeOut'));
         });
     },
-    groupAddOrLeave(data,opt){
-      if(Object.keys(this.groupMember).length && data.group_id == this.gid){
-       if( opt=== 'add' && !this.groupMember.data.includes(data.username) ){
-          this.groupMember.num += 1
-          this.groupMember.data.push(data.username)
-       }else if(opt=== 'leave' ){
-         this.groupMember.num -= 1
-         var index = this.groupMember.data.indexOf(data.username); 
-          if (index > -1) { 
-          this.groupMember.data.splice(index, 1); 
-          } 
-       }
+    groupAddOrLeave(data,opt,val){
+      //  && data.group_id == this.gid
+      // if(Object.keys(this.groupMember).length){
+        let that = this
+        let method = {
+          add(data){
+            let vals= this.memberVal(that.groupMember.data)
+            if(Array.isArray(data)){
+                let addVals= this.memberVal(data)
+                addVals.forEach(item=>{
+                  if(!vals.includes(item)){
+                    that.groupMember.num += 1
+                    that.groupMember.data.push(...data)
+                  }
+                })
+            }else {
+              if(vals.includes(data.username))return
+              that.groupMember.num += 1
+              val== 'kefu' ?that.groupMember.data.unshift(data) :that.groupMember.data.push(data)
+            }
            
-      }
+          },
+          leave(data){
+            that.groupMember.num -= 1
+            if(data.kefu_code){
+               that.groupMember.data.forEach((item,index)=>{
+                 if(item.kefu_code && data.kefu_code == item.kefu_code){
+                    that.groupMember.data.splice(index,1)
+                  }
+               })
+            }else {
+              let  index = this.memberVal(that.groupMember.data).indexOf(data.username); 
+              if (index != -1) { 
+                that.groupMember.data.splice(index, 1); 
+              } 
+            }
+          },
+          memberVal(list){
+           return  list.map(item=>{
+              return item.username
+            })
+          }
+        }
+        method[opt](data)
+      // }
     },
     pcStopService(){
       this.stopRecorder(this.uploadeVoice)
@@ -446,7 +504,7 @@ export default {
           this.loading=false
         });
     },
-     getLog(e){ 
+    getLog(e){ 
       this.isMore = true
       this.page ++
       let scrollH = this.$refs.GroupChatInfo.$refs.chatInfo.scrollHeight
@@ -477,6 +535,13 @@ export default {
         uid: this.userInfo.data.uid
       });
     });
+    })
+     .catch(err=>{
+        this.$dialog.alert({
+                  message: '商家不存在或参数错误！',
+                  showConfirmButton:false,
+                  showCancelButton:false
+                })
     })
   }
 };

@@ -15,7 +15,8 @@ import i18n from './i18n';
 // 移动端调试
 import Vconsole from "vconsole";
 let vConsole = new Vconsole();
-// import { userDecode } from "@/api/chat.js";
+
+import { userDecode } from "@/api/chat.js";
 import {  setStorage, getStorage,getQueryString,segmentation } from "@/libs/utils";
 
 // vant
@@ -57,14 +58,18 @@ Object.keys(filters).forEach(key => {
 });
 Vue.config.productionTip = false;
 Vue.prototype.$toast = Toast;
+Vue.prototype.$dialog = Dialog;
 Vue.prototype.$SocketIO = SocketIO;
 Vue.prototype.$dayjs = dayjs; //可以全局使用dayjs
 Vue.use(
     new VueSocketIO({
-      ebug: true,
-      connection: SocketIO.connect(`wss://server.nikidigital.net`),
+      debug: true,
+      connection: SocketIO.connect(`wss://server.nikidigital.net`,
+        {
+          transports: ['websocket', 'xhr-polling', 'jsonp-polling'],
+        }
+      ),
       store,
-      transports: ["websocket"],
         })
       );
 new Vue({

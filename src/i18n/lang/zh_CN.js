@@ -31,7 +31,7 @@ module.exports = {
   messages:'留言',
   messageContent:'请输入留言',
   submit:'提交',
-  messageSuccess:'留言成功',
+  messageSuccess:'感谢你的留言，请等待客服联系你 ',
   correctNumber:'请输入正确的手机号码！',
   correctEmail:'请输入正确的邮箱！',
   pleaseMessage:'请留言!'

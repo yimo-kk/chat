@@ -107,7 +107,7 @@ export default {
 .group_list {
   padding: 10px 0;
   overflow: auto;
-  height: 94%;
+  height: 90%;
    &::-webkit-scrollbar {
         width: 4px;
         /*高宽分别对应横竖滚动条的尺寸*/

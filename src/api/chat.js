@@ -108,7 +108,7 @@ export function sendGroupChatFile(params) {
  */
 export function getGroupList(params) {
   return Axios({
-    url: `/chat/getGroupList`,
+    url: `/service/getGroupUsersList`,
     method: "post",
     data: qs.stringify(params)
   });
@@ -183,3 +183,15 @@ export function userDecode(params) {
     data: qs.stringify(params)
   });
 }
+
+// /**
+//  * 轮询查询客服长时间没回复
+//  * @param {*} params
+//  */
+// export function getNoResponse(params) {
+//   return Axios({
+//     url: `/chat/getNoResponse`,
+//     method: "get",
+//     params: params
+//   });
+// }
