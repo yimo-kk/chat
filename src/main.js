@@ -13,11 +13,9 @@ import "./assets/iconfont/iconfont.css";
 import "vant/lib/index.css";
 import i18n from './i18n';
 // 移动端调试
-import Vconsole from "vconsole";
-let vConsole = new Vconsole();
+// import Vconsole from "vconsole";
+// let vConsole = new Vconsole();
 
-import { userDecode } from "@/api/chat.js";
-import {  setStorage, getStorage,getQueryString,segmentation } from "@/libs/utils";
 
 // vant
 import {
@@ -34,7 +32,7 @@ import {
   NoticeBar,
   Form,
   Empty,
-  Loading 
+  Loading
 } from "vant";
 Vue.use(Field)
   .use(Uploader)
@@ -62,22 +60,22 @@ Vue.prototype.$dialog = Dialog;
 Vue.prototype.$SocketIO = SocketIO;
 Vue.prototype.$dayjs = dayjs; //可以全局使用dayjs
 Vue.use(
-    new VueSocketIO({
-      debug: true,
-      connection: SocketIO.connect(`wss://server.nikidigital.net`,
-        {
-          transports: ['websocket', 'xhr-polling', 'jsonp-polling'],
-        }
-      ),
-      store,
-        })
-      );
-new Vue({
-    router,
-    i18n,
+  new VueSocketIO({
+    debug: true,
+    connection: SocketIO.connect(`wss://server.nikidigital.net`,
+      {
+        transports: ['websocket', 'xhr-polling', 'jsonp-polling'],
+      }
+    ),
     store,
-    render: h => h(App)
-  }).$mount("#app");
+  })
+);
+new Vue({
+  router,
+  i18n,
+  store,
+  render: h => h(App)
+}).$mount("#app");
 
 
 
@@ -143,4 +141,4 @@ new Vue({
   //     render: h => h(App)
   //   }).$mount("#app");
   // }
-   
+

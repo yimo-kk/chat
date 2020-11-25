@@ -1,31 +1,26 @@
 <template>
   <div id="app">
     <router-view />
-    <audio id="audio" preload="auto" >
+    <audio id="audio" preload="auto">
       <source src="./assets/voice.mp3" type="audio/mp3" autoplay />
     </audio>
   </div>
 </template>
 <script>
-// import common from "./mixins/common";
 export default {
-  // mixins: [common()],
   methods: {},
-  mounted () {
-  // let ip = returnCitySN["cip"]; // ip
-  // let address = returnCitySN["cname"]; // 地址
-  // this.$store.commit('setUserIp',{ip:ip,address:address})
-  let that = this
-  document.addEventListener('click',()=>{
-     that.$store.commit('closeTitleScrolling','妮姬客服')
-      this.$store.commit('setNum',0)
-  })
-  document.addEventListener('touchstart',()=>{
-     that.$store.commit('closeTitleScrolling','妮姬客服')
-      this.$store.commit('setNum',0)
-  })
-  }
-};
+  mounted() {
+    let that = this
+    document.addEventListener('click', () => {
+      that.$store.commit('closeTitleScrolling', '妮姬客服')
+      this.$store.commit('setNum', 0)
+    })
+    document.addEventListener('touchstart', () => {
+      that.$store.commit('closeTitleScrolling', '妮姬客服')
+      this.$store.commit('setNum', 0)
+    })
+  },
+}
 </script>
 
 <style lang="less">
@@ -34,5 +29,5 @@ export default {
   width: 100%;
   height: 100%;
 }
-@import "./styles/chatStyle.less";
+@import './styles/chatStyle.less';
 </style>

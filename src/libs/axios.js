@@ -32,8 +32,6 @@ axios.interceptors.response.use(
     // }else {
       return response;
     // }
-
-
   },
   function(error) {
     // 对响应错误做点什么

@@ -183,15 +183,3 @@ export function userDecode(params) {
     data: qs.stringify(params)
   });
 }
-
-// /**
-//  * 轮询查询客服长时间没回复
-//  * @param {*} params
-//  */
-// export function getNoResponse(params) {
-//   return Axios({
-//     url: `/chat/getNoResponse`,
-//     method: "get",
-//     params: params
-//   });
-// }

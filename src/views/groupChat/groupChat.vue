@@ -1,28 +1,29 @@
 <template>
   <div class="chat">
-    <div v-show = loading class='loading_box'>
-      <van-loading size="45" class='loading' color='#02c0fe' />
+    <div v-show="loading" class="loading_box">
+      <van-loading size="45" class="loading" color="#02c0fe" />
     </div>
-    <div class="chat_serve w" >
+    <div class="chat_serve w">
       <div class="chat_box">
         <!-- 消息展示-->
         <ChatInfo
-        ref="GroupChatInfo"
+          ref="GroupChatInfo"
           :chatUser="chatTitle"
           :messages="messages"
           :Pcrecord="Pcrecord"
           :isPrompt="false"
           :isPerson="true"
           :name="true"
+          :isTts="false"
           @stopRecorder="pcStopService"
-          :groupNum="groupMember.num" 
+          :groupNum="groupMember.num"
           :announcement="announcement"
           @playRecord="playRecord"
           @pcCancel="pcCancel"
-          :isMore='isMore'
-          :count='count'
-          @getLog='getLog'
-        ></ChatInfo> 
+          :isMore="isMore"
+          :count="count"
+          @getLog="getLog"
+        ></ChatInfo>
         <!-- 聊天输入框 -->
         <div class="input_tab">
           <div class="input_box">
@@ -55,8 +56,15 @@
                 ></van-icon>
               </van-uploader>
               <!-- 由商家控制 -->
-               <van-icon v-if="(isAudio&isIE)&&on_voice" @click="recordService" name="comment-o" style="padding:0 1px" size="1.8rem" />
-              <van-icon v-else-if="isIE && on_voice "
+              <van-icon
+                v-if="isAudio & isIE && on_voice"
+                @click="recordService"
+                name="comment-o"
+                style="padding:0 1px"
+                size="1.8rem"
+              />
+              <van-icon
+                v-else-if="isIE && on_voice"
                 class="iconfont font_size"
                 size="1.8rem"
                 class-prefix="icon"
@@ -67,7 +75,7 @@
             <div
               class="record flex_center"
               @touchstart="startRecordServic"
-              @touchend="endRecordService" 
+              @touchend="endRecordService"
               v-if="isAudio"
             >
               {{ btnText }}
@@ -86,7 +94,7 @@
                   size="large"
                   @focus="
                     () => {
-                      faceShow = false;
+                      faceShow = false
                     }
                   "
                   @keydown="enter"
@@ -115,7 +123,7 @@
                   :class="['btn', 'send_btn']"
                   @click="textSend"
                 >
-                  {{$t('send')}}
+                  {{ $t('send') }}
                 </p>
               </transition>
             </div>
@@ -143,30 +151,32 @@
       <div class="record_mask" v-show="isMask">
         <div class="record_pic">
           <canvas id="canvas"></canvas>
-          <p class="cancel">  {{$t('clsSend')}}</p>
+          <p class="cancel">{{ $t('clsSend') }}</p>
         </div>
       </div>
       <!-- 播放录音 -->
       <audio ref="audio" @ended="playEnd" style="display: none;"></audio>
     </div>
-      <!-- code 不存在 -->
+    <!-- code 不存在 -->
     <div v-if="isGroupUser.state" class="is_group_user">
-      <p class="is_group_user_msg">{{ isGroupUser.message ||isGroupUser.msg}}</p>
+      <p class="is_group_user_msg">
+        {{ isGroupUser.message || isGroupUser.msg }}
+      </p>
     </div>
   </div>
 </template>
 
 <script>
-import { mapState } from "vuex";
-import pcChatList from "@/components/pcChatList/pcChatList.vue";
-import ChatInfo from "@/components/chatPage/chatInfo.vue";
-import common from "@/mixins/common";
+import { mapState } from 'vuex'
+import pcChatList from '@/components/pcChatList/pcChatList.vue'
+import ChatInfo from '@/components/chatPage/chatInfo.vue'
+import common from '@/mixins/common'
 import {
   getGroupChatLog,
   sendGroupChatFile,
   getGroupList,
-  uploadVoice
-} from "@/api/chat.js";
+  uploadVoice,
+} from '@/api/chat.js'
 import {
   compressImage,
   isImage,
@@ -174,166 +184,168 @@ import {
   conversionFace,
   createUserName,
   setStorage,
-  isIE
-} from "@/libs/utils.js";
+  isIE,
+} from '@/libs/utils.js'
 export default {
-  name: "groupChat",
+  name: 'groupChat',
   mixins: [common()],
   components: {
     pcChatList,
-    ChatInfo
+    ChatInfo,
   },
   data() {
     return {
-      loading:false,
+      loading: false,
       messages: [],
       Pcrecord: false,
       sendType: null,
       isMask: false, // 录音时的波浪
-      chatTitle: "",
+      chatTitle: '',
       groupMember: {},
       isGroupUser: {
         state: false,
-        message: ""
+        message: '',
       },
-      on_file: 0, //上传文件和语音功能是否开启 0否1是  
+      on_file: 0, //上传文件和语音功能是否开启 0否1是
       on_voice: 0,
-      socket:'',
-      page:1,
-      count:0,
-      isMore:false,
-      is_invite:null
-    };
+      socket: '',
+      page: 1,
+      count: 0,
+      isMore: false,
+      is_invite: null,
+    }
   },
   computed: {
-    isIE(){
-       return !isIE()
-     }
+    isIE() {
+      return !isIE()
+    },
   },
   sockets: {
     // connect:查看socket是否渲染成功
-    connect() {
+    connect() {},
+    //发生错误关闭连接
+    error() {
+      this.$socket.close()
     },
-      // disconnect:检测socket断开连接
+    // disconnect:检测socket断开连接
     disconnect(data) {
-      let that = this
-      console.log('断开')
-      this.$dialog.confirm({
-          title: '提示',
-          message: '网络异常断开连接，请刷新！',
-        })
-      .then(() => {
-        this.$router.go(0)
-        // on confirm
-      })
+      // let that = this
+      // console.log('断开')
+      // this.$dialog.confirm({
+      //     title: '提示',
+      //     message: '网络异常断开连接，请刷新！',
+      //   })
+      // .then(() => {
+      //   this.$router.go(0)
+      //   // on confirm
+      // })
     },
     reconnect(data) {
       console.log('重连')
-      this.$socket.emit("group", {
-            username: this.username,
-            group_id: this.gid,
-            seller_code:this.code || this.userInfo.seller.seller_code
-      });
+      this.$socket.emit('group', {
+        username: this.username,
+        group_id: this.gid,
+        seller_code: this.code || this.userInfo.seller.seller_code,
+      })
     },
     // 收到群消息
     groupMsg(data) {
-      if(this.username !== data.from_name) {
-       let num = this.$store.state.num
-      this.$store.commit('setNum',++num)
-      this.$store.commit('setTitle',num)
-      this.$store.commit('closeTitleScrolling')
-      this.$store.dispatch('playPromptVuex')
-      this.$store.commit('titleScrolling')
-      };
-      data.type === 3&&(data.message.play = false)
+      if (this.username !== data.from_name) {
+        let num = this.$store.state.num
+        this.$store.commit('setNum', ++num)
+        this.$store.commit('setTitle', num)
+        this.$store.commit('closeTitleScrolling')
+        this.$store.dispatch('playPromptVuex')
+        this.$store.commit('titleScrolling')
+      }
+      data.type === 3 && (data.message.play = false)
       data.type === 0 &&
-        (data.message = conversionFace(data.content || data.message));
-      this.messages.push(data);
+        (data.message = conversionFace(data.content || data.message))
+      this.messages.push(data)
     },
     // 拉黑全局
     groupBlack(data) {
-      data.kefu_name = "kefu";
-      this.messages.push(data);
+      data.kefu_name = 'kefu'
+      this.messages.push(data)
     },
     // 拉黑个人
     userBlack(data) {
       if (data.from_name == this.$store.state.userInfo.data.username) {
-        data.kefu_name = "kefu";
-        this.messages.push(data);
+        data.kefu_name = 'kefu'
+        this.messages.push(data)
       }
     },
     removeblack(data) {
       // if (data.username == this.$store.state.userInfo.data.username) {
-        data.kefu_name = "kefu";
-        this.messages.push(data);
+      data.kefu_name = 'kefu'
+      this.messages.push(data)
       // }
     },
     // 禁言全局
     groupForbid(data) {
-      data.kefu_name = "kefu";
-      this.messages.push(data);
+      data.kefu_name = 'kefu'
+      this.messages.push(data)
     },
     // 禁言个人
     userForbid(data) {
       if (data.from_name == this.$store.state.userInfo.data.username) {
-        data.kefu_name = "kefu";
-        this.messages.push(data);
+        data.kefu_name = 'kefu'
+        this.messages.push(data)
       }
     },
     // 解禁个人
     removeforbid(data) {
-      data.kefu_name = "kefu";
-      this.messages.push(data);
+      data.kefu_name = 'kefu'
+      this.messages.push(data)
     },
     // 加入聊天室
-    userJoin(data){
-      this.groupAddOrLeave(data,'add')
+    userJoin(data) {
+      this.groupAddOrLeave(data, 'add')
     },
     // 离开聊天室
-    userLeave(data){
-        this.groupAddOrLeave(data,'leave')
+    userLeave(data) {
+      this.groupAddOrLeave(data, 'leave')
     },
     // 客服上线
-    kefuOnline(data){
-        this.groupAddOrLeave(data,'add','kefu')
+    kefuOnline(data) {
+      this.groupAddOrLeave(data, 'add', 'kefu')
     },
     // 客服离开
-    kefuLeave(data){
-        this.groupAddOrLeave(data,'leave')
+    kefuLeave(data) {
+      this.groupAddOrLeave(data, 'leave')
     },
     // 管理员拉人进群
-    pullUsersGroup(data){
-      this.groupAddOrLeave(data,'add')
-   
+    pullUsersGroup(data) {
+      this.groupAddOrLeave(data, 'add')
     },
     // 踢出群聊
     kickGroup(data) {
-        data.kefu_name = "kefu";
-        this.messages.push(data);
+      data.kefu_name = 'kefu'
+      this.messages.push(data)
+      this.groupAddOrLeave(data, 'leave')
       if (data.username == this.$store.state.userInfo.data.username) {
-        this.isGroupUser= {
+        this.isGroupUser = {
           state: true,
-          message: this.$t('noMember')
+          message: this.$t('noMember'),
         }
       }
     },
     // 解散群
-    delGroup(data){
-      if(data.group_id == this.gid){
-        this.isGroupUser= {
+    delGroup(data) {
+      if (data.group_id == this.gid) {
+        this.isGroupUser = {
           state: true,
-          message: this.$t('disband')
+          message: this.$t('disband'),
         }
       }
-      
-    }
+    },
   },
   methods: {
     // 发送消息
     send(data) {
-      if (!this.sendText.length && this.sendType === 0) return;
+      if (!this.sendText.length && this.sendType === 0) return
       let my_send = {
-        cmd: "user-group",
+        cmd: 'user-group',
         message: data,
         from_id: this.userInfo.data.uid,
         from_name: this.username,
@@ -342,211 +354,215 @@ export default {
         seller_code: this.userInfo.seller.seller_code,
         state: 0,
         type: this.sendType,
-        is_invite:this.is_invite,
-        from_ip: this.userIp.ip
-      };
-      let sendMessage = JSON.parse(JSON.stringify(my_send));
-      this.sendType === 0 &&
-        (sendMessage.message = conversion(my_send.message));
-      this.$socket.emit("message", sendMessage);
-      this.sendText = "";
-      this.faceShow = false;
+        is_invite: this.is_invite,
+        from_ip: this.userIp.ip,
+      }
+      let sendMessage = JSON.parse(JSON.stringify(my_send))
+      this.sendType === 0 && (sendMessage.message = conversion(my_send.message))
+      this.$socket.emit('message', sendMessage)
+      this.sendText = ''
+      this.faceShow = false
     },
     // 获取图片
     uploadeImg(file) {
-      this.sendType = 1;
+      this.sendType = 1
       if (!isImage(file.file.type)) {
         this.$toast({
           message: this.$t('selectImg'),
-          position: "top"
-        });
+          position: 'top',
+        })
       } else {
         compressImage(
           file.file,
-          imgData => {
-            this.send(imgData);
+          (imgData) => {
+            this.send(imgData)
           },
-          error => {
+          (error) => {
             // 压缩出错
             this.$toast(this.$t('sendErr'))
           }
-        );
+        )
       }
     },
     // 获取群聊记录
-    getGroupChatLog(params,fn) {
+    getGroupChatLog(params, fn) {
       getGroupChatLog(params)
-        .then(result => {
+        .then((result) => {
           this.loading = false
           this.count = result.data.count
           this.on_file = result.data.on_file
           this.on_voice = result.data.on_voice
-          if (result.data.code == 1 || result.data.code == -1 ) {
+          if (result.data.code == 1 || result.data.code == -1) {
             this.isGroupUser.state = true
             this.isGroupUser.message = result.data.msg
-            return;
+            return
           } else {
-             this.$socket.emit("group", {
+            this.$socket.emit('group', {
               username: this.username,
               group_id: this.gid,
-              seller_code:this.userInfo.seller.seller_code,
-              headimg:this.userInfo.data.headimg
-            });
+              seller_code: this.userInfo.seller.seller_code,
+              headimg: this.userInfo.data.headimg,
+            })
             this.is_invite = result.data.group.is_invite
-            this.chatTitle = result.data.group_name;
-           let array = result.data.data.map(item => {
-              item.type == 3 && (item.play = false);
+            this.chatTitle = result.data.group_name
+            let array = result.data.data.map((item) => {
+              item.type == 3 && (item.play = false)
               if (item.type == 0) {
                 item.content
                   ? (item.content = conversionFace(item.content))
-                  : (item.message = conversionFace(item.message));
+                  : (item.message = conversionFace(item.message))
               }
-              return item;
-            });
-            if(this.page > 1){
+              return item
+            })
+            if (this.page > 1) {
               this.messages.unshift(...array)
-              fn &&  fn()
-              setTimeout(()=>{
+              fn && fn()
+              setTimeout(() => {
+                this.isMore = false
+              }, 200)
+            } else {
+              this.messages = array
               this.isMore = false
-             },200)
-           }else {
-               this.messages = array
-               this.isMore = false
-           }
+            }
           }
         })
-        .catch(err => {
+        .catch((err) => {
           this.loading = false
-          this.$toast(err.msg);
-        });
+          this.$toast(err.msg)
+        })
     },
     // 获取群成员
     getGroupList(group_id) {
-      getGroupList({ group_id,seller_code:  this.userInfo.seller.seller_code}) 
-        .then(result => {
-          result.data.data = Object.values( result.data.data)
+      getGroupList({ group_id, seller_code: this.userInfo.seller.seller_code })
+        .then((result) => {
+          result.data.data = Object.values(result.data.data)
           this.groupMember = result.data
         })
-        .catch(err => {
-          this.$toast(this.$t('timeOut'));
-        });
+        .catch((err) => {
+          console.log(err)
+          this.$toast(this.$t('timeOut'))
+        })
     },
-    groupAddOrLeave(data,opt,val){
-      //  && data.group_id == this.gid
-      // if(Object.keys(this.groupMember).length){
-        let that = this
-        let method = {
-          add(data){
-            let vals= this.memberVal(that.groupMember.data)
-            if(Array.isArray(data)){
-                let addVals= this.memberVal(data)
-                addVals.forEach(item=>{
-                  if(!vals.includes(item)){
-                    that.groupMember.num += 1
-                    that.groupMember.data.push(...data)
-                  }
-                })
-            }else {
-              if(vals.includes(data.username))return
-              that.groupMember.num += 1
-              val== 'kefu' ?that.groupMember.data.unshift(data) :that.groupMember.data.push(data)
-            }
-           
-          },
-          leave(data){
-            that.groupMember.num -= 1
-            if(data.kefu_code){
-               that.groupMember.data.forEach((item,index)=>{
-                 if(item.kefu_code && data.kefu_code == item.kefu_code){
-                    that.groupMember.data.splice(index,1)
-                  }
-               })
-            }else {
-              let  index = this.memberVal(that.groupMember.data).indexOf(data.username); 
-              if (index != -1) { 
-                that.groupMember.data.splice(index, 1); 
-              } 
-            }
-          },
-          memberVal(list){
-           return  list.map(item=>{
-              return item.username
+    groupAddOrLeave(data, opt, val) {
+      if (!Object.keys(this.groupMember).length) return
+      let that = this
+      let method = {
+        add(data) {
+          let vals = this.memberVal(that.groupMember.data)
+          if (Array.isArray(data)) {
+            let addVals = this.memberVal(data)
+            addVals.forEach((item) => {
+              if (!vals.includes(item)) {
+                that.groupMember.num += 1
+                that.groupMember.data.push(...data)
+              }
             })
+          } else {
+            if (vals.includes(data.username)) return
+            that.groupMember.num += 1
+            val == 'kefu'
+              ? that.groupMember.data.unshift(data)
+              : that.groupMember.data.push(data)
           }
-        }
-        method[opt](data)
-      // }
+        },
+        leave(data) {
+          that.groupMember.num -= 1
+          if (data.kefu_code) {
+            that.groupMember.data.forEach((item, index) => {
+              if (item.kefu_code && data.kefu_code == item.kefu_code) {
+                that.groupMember.data.splice(index, 1)
+              }
+            })
+          } else {
+            let index = this.memberVal(that.groupMember.data).indexOf(
+              data.username
+            )
+            if (index != -1) {
+              that.groupMember.data.splice(index, 1)
+            }
+          }
+        },
+        memberVal(list) {
+          return list.map((item) => {
+            return item.username
+          })
+        },
+      }
+      // data.group_id == this.gid &&
+      method[opt](data)
     },
-    pcStopService(){
+    pcStopService() {
       this.stopRecorder(this.uploadeVoice)
     },
-    recordService(){
+    recordService() {
       this.record(this.uploadeVoice)
     },
-    startRecordServic(e){
-      this.startRecord(e,this.uploadeVoice)
+    startRecordServic(e) {
+      this.startRecord(e, this.uploadeVoice)
     },
-    endRecordService(e){
-      this.endRecord(e,this.uploadeVoice)
+    endRecordService(e) {
+      this.endRecord(e, this.uploadeVoice)
     },
-    uploadeVoice(formdata){
+    uploadeVoice(formdata) {
       uploadVoice({
-          params: formdata,
-          seller_code: this.userInfo.seller.seller_code
+        params: formdata,
+        seller_code: this.userInfo.seller.seller_code,
+      })
+        .then((result) => {
+          this.loading = false
+          let data = result.data.data
+          data.duration = Math.round(this.recorder.duration)
+          this.send(data)
         })
-        .then(result => {
-          this.loading=false
-          let data = result.data.data;
-          data.duration = Math.round(this.recorder.duration);
-          this.send(data);
+        .catch((err) => {
+          this.loading = false
         })
-        .catch(err => {
-          this.loading=false
-        });
     },
-    getLog(e){ 
+    getLog(e) {
       this.isMore = true
-      this.page ++
+      this.page++
       let scrollH = this.$refs.GroupChatInfo.$refs.chatInfo.scrollHeight
-      this.getGroupChatLog({
-        page:this.page,
-        group_id: this.gid,
-        seller_code: this.userInfo.seller.seller_code,
-        uid: this.userInfo.data.uid
-      },
-        ()=>{
-          setTimeout(()=>{
-            e.target.scrollTo(0,  e.target.scrollHeight -  (scrollH  + 30 ) )
-            }) 
+      this.getGroupChatLog(
+        {
+          page: this.page,
+          group_id: this.gid,
+          seller_code: this.userInfo.seller.seller_code,
+          uid: this.userInfo.data.uid,
+        },
+        () => {
+          setTimeout(() => {
+            e.target.scrollTo(0, e.target.scrollHeight - (scrollH + 30))
           })
+        }
+      )
     },
   },
-  created() {
-  },
+  created() {},
   mounted() {
-     this.judgment().then(()=>{
-      this.getUserInfo(()=>{
-      this.getNewsData(this.userInfo.seller.seller_code);
-      this.getGroupList(this.gid);
-      this.getGroupChatLog({
-        page:1,
-        group_id: this.gid,
-        seller_code: this.userInfo.seller.seller_code,
-        uid: this.userInfo.data.uid
-      });
-    });
-    })
-     .catch(err=>{
+    this.judgment()
+      .then(() => {
+        this.getUserInfo(() => {
+          this.getNewsData(this.userInfo.seller.seller_code)
+          this.getGroupList(this.gid)
+          this.getGroupChatLog({
+            page: 1,
+            group_id: this.gid,
+            seller_code: this.userInfo.seller.seller_code,
+            uid: this.userInfo.data.uid,
+          })
+        })
+      })
+      .catch((err) => {
         this.$dialog.alert({
-                  message: '商家不存在或参数错误！',
-                  showConfirmButton:false,
-                  showCancelButton:false
-                })
-    })
-  }
-};
+          message: '商家不存在或参数错误！',
+          showConfirmButton: false,
+          showCancelButton: false,
+        })
+      })
+  },
+}
 </script>
-<style lang='less' scoped>
+<style lang="less" scoped>
 .chat {
   height: 100%;
 }
@@ -565,7 +581,7 @@ export default {
     background-color: #fff;
     width: 18rem;
     height: 55px;
-    border-radius: .8rem;
+    border-radius: 0.8rem;
     text-align: center;
     line-height: 55px;
   }
