@@ -260,7 +260,7 @@ export default {
       let obj = {}
       if (getStorage(this.$route.query.code)) {
         obj = JSON.parse(getStorage(this.$route.query.code))
-        obj[this.username] = data.kefu_code
+        obj[this.username].kefu_code = data.kefu_code
         setStorage(this.$route.query.code, obj)
       }
     },
@@ -307,7 +307,7 @@ export default {
       if (!this.sendText.length && this.sendType === 0) return
       let my_send = {
         cmd: 'user-service',
-        kefu_code: JSON.parse(getStorage(this.code))[this.username],
+        kefu_code: JSON.parse(getStorage(this.code))[this.username].kefu_code,
         from_avatar: this.userInfo.data.headimg,
         message: data,
         from_id: this.userInfo.data.uid ? this.userInfo.data.uid : '',
@@ -442,7 +442,7 @@ export default {
       if (val) return
       praise({
         uid: this.userInfo.data.uid,
-        kefu_code: JSON.parse(getStorage(this.code))[this.username],
+        kefu_code: JSON.parse(getStorage(this.code))[this.username].kefu_code,
         code: this.userInfo.seller.seller_code,
         content: this.messages[index].scoreMessage,
         star:

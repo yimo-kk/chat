@@ -14,7 +14,6 @@
           :isPrompt="false"
           :isPerson="true"
           :name="true"
-          :isTts="false"
           @stopRecorder="pcStopService"
           :groupNum="groupMember.num"
           :announcement="announcement"
@@ -163,6 +162,7 @@
         {{ isGroupUser.message || isGroupUser.msg }}
       </p>
     </div>
+    <enterPopup :isShowPopup="isShowPopup" @onSubmit="onSubmit"></enterPopup>
   </div>
 </template>
 
@@ -170,12 +170,16 @@
 import { mapState } from 'vuex'
 import pcChatList from '@/components/pcChatList/pcChatList.vue'
 import ChatInfo from '@/components/chatPage/chatInfo.vue'
+import enterPopup from '@/components/popup/enterPopup.vue'
 import common from '@/mixins/common'
+import { setStorageData, getStorage } from '@/libs/utils.js'
 import {
   getGroupChatLog,
   sendGroupChatFile,
   getGroupList,
   uploadVoice,
+  checkGroupPwd,
+  getGroupData,
 } from '@/api/chat.js'
 import {
   compressImage,
@@ -192,6 +196,7 @@ export default {
   components: {
     pcChatList,
     ChatInfo,
+    enterPopup,
   },
   data() {
     return {
@@ -213,6 +218,10 @@ export default {
       count: 0,
       isMore: false,
       is_invite: null,
+      isShowPopup: false,
+      currentUid: null,
+      currentUsername: '',
+      currentHeadimg: '',
     }
   },
   computed: {
@@ -390,8 +399,6 @@ export default {
         .then((result) => {
           this.loading = false
           this.count = result.data.count
-          this.on_file = result.data.on_file
-          this.on_voice = result.data.on_voice
           if (result.data.code == 1 || result.data.code == -1) {
             this.isGroupUser.state = true
             this.isGroupUser.message = result.data.msg
@@ -536,23 +543,86 @@ export default {
         }
       )
     },
+    // 输入密码提交
+    onSubmit(password) {
+      checkGroupPwd({
+        group_id: this.gid,
+        seller_code: this.userInfo.seller.seller_code,
+        group_pwd: password,
+        uid: this.currentUid,
+        username: this.currentUsername,
+        headimg: this.currentHeadimg,
+      })
+        .then((result) => {
+          if (result.data.code == -1) {
+            this.$toast(this.$t('notPassword'))
+            return
+          } else {
+            setStorageData(this.code, this.username, this.gid, true)
+            this.isShowPopup = false
+            this.loading = true
+            this.getNewsData(this.userInfo.seller.seller_code)
+            this.getGroupList(this.gid)
+            this.getGroupChatLog({
+              page: 1,
+              group_id: this.gid,
+              seller_code: this.userInfo.seller.seller_code,
+              uid: this.userInfo.data.uid,
+            })
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
+    // 获取群是否需要邀请
+    getGroupData() {
+      getGroupData({
+        group_id: this.gid,
+        seller_code: this.userInfo.seller.seller_code,
+        username: this.username,
+      })
+        .then(async (result) => {
+          this.on_file = result.data.group.on_file
+          this.on_voice = result.data.group.on_voice
+          this.currentUid = result.data.users.uid
+          this.currentUsername = result.data.users.username
+          this.currentHeadimg = result.data.users.headimg
+          let oldPassword
+          JSON.parse(getStorage(this.code))[result.data.users.username][
+            'groupList'
+          ].forEach((item) => {
+            item.group_id === this.gid && (oldPassword = item.isPassword)
+          })
+          if (!oldPassword && result.data.group.is_invite) {
+            oldPassword ? '' : (this.isShowPopup = true)
+          } else {
+            this.loading = true
+            await this.getNewsData(this.userInfo.seller.seller_code)
+            await this.getGroupList(this.gid)
+            await this.getGroupChatLog({
+              page: 1,
+              group_id: this.gid,
+              seller_code: this.userInfo.seller.seller_code,
+              uid: this.userInfo.data.uid,
+            })
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
   },
   created() {},
   mounted() {
     this.judgment()
-      .then(() => {
-        this.getUserInfo(() => {
-          this.getNewsData(this.userInfo.seller.seller_code)
-          this.getGroupList(this.gid)
-          this.getGroupChatLog({
-            page: 1,
-            group_id: this.gid,
-            seller_code: this.userInfo.seller.seller_code,
-            uid: this.userInfo.data.uid,
-          })
+      .then(async () => {
+        this.getUserInfo(async () => {
+          await this.getGroupData()
         })
       })
       .catch((err) => {
+        console.log(err)
         this.$dialog.alert({
           message: '商家不存在或参数错误！',
           showConfirmButton: false,

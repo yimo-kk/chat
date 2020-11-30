@@ -11,7 +11,9 @@ import {
   setStorage,
   getStorage,
   getQueryString,
-  segmentation
+  segmentation,
+  createUserName,
+  setStorageData
 } from "@/libs/utils.js";
 const appData = require("@/assets/emojis.json");
 import { mapState } from "vuex";
@@ -81,7 +83,6 @@ export default function () {
     },
     methods: {
       getUserInfo (callback) {
-        this.loading = true
         let params = {
           username: this.username,
           is_tourist: this.$route.query.username ? 2 : 0
@@ -99,13 +100,11 @@ export default function () {
             if (res.code === 2 || res.code === 6) {
               res.state = true
               this.isGroupUser = res
-              this.loading = false
               return
             }
             callback()
           })
           .catch(err => {
-            this.loading = false
             this.$toast(err.msg);
           });
       },
@@ -386,6 +385,32 @@ export default function () {
             this.loading = false
           });
       },
+      handleBusinessUser (code, data) {
+        let obj = {}
+        let valueObj = { 'kefu_code': '', 'groupList': [{ 'group_id': data.group_id, 'isPassword': false }] }
+        if (getStorage(code)) {
+          obj = JSON.parse(getStorage(code))
+          let nowObj = {}
+          if (Object.keys(obj)[0] !== data.username) {
+            nowObj[data.username] = valueObj
+            setStorage(code, JSON.stringify(nowObj))
+          } else {
+            let isExist = obj[data.username]['groupList'].some(item => {
+              return item.group_id == data.group_id
+            })
+            !isExist && obj[data.username]['groupList'].push({ 'group_id': data.group_id, 'isPassword': false })
+            setStorage(code, JSON.stringify(obj))
+          }
+        } else {
+          obj[data.username] = valueObj
+          setStorage(code, obj);
+        }
+        this.$store.commit("setUsername", data.username);
+        this.$store.commit("setCode", code);
+        data.group_id &&
+          this.$store.commit("setGroupId", data.group_id);
+      },
+      //  商家:{用户名:客服}    商家:{用户名:{客服名:客服,群id:id,isPassword:false,password:null}}
       // 判断是否有商家code等参数
       judgment (fn) {
         return new Promise(async (resolve, reject) => {
@@ -402,32 +427,21 @@ export default function () {
                 return
               }
               let data = segmentation(result.data.data)
-              let obj = {}
-              if (getStorage(code)) {
-                obj = JSON.parse(getStorage(code))
-                if (!obj[data.username]) {
-                  obj[data.username] = ''
-                }
-                setStorage(code, JSON.stringify(obj))
-              } else {
-                obj[data.username] = ''
-                setStorage(code, obj);
+              // 当解密没有name时创建一个随机name
+              if (!data.username) {
+                (getStorage(code) && Object.keys(JSON.parse(getStorage(code))).length) ?
+                  data.username = Object.keys(JSON.parse(getStorage(code)))[0] :
+                  data.username = createUserName()
               }
-              this.$store.commit("setUsername", data.username);
-              this.$store.commit("setCode", code);
-              data.group_id &&
-                this.$store.commit("setGroupId", data.group_id);
+              this.handleBusinessUser(code, data)
               resolve()
+
             })
             .catch(err => {
               reject(err);
             });
         })
       }
-    },
-    created () {
-      // this.code != this.$route.query.code &&
-      //   this.$store.commit("setCode", this.$route.query.code); 
     },
     mounted () {
       // 点击表情框以外就隐藏

@@ -92,7 +92,7 @@
                 class="content left"
                 >{{ item.content || item.message }}</span
               >
-              <div
+              <!-- <div
                 v-if="isTts"
                 class="playIcon"
                 status="stop"
@@ -107,7 +107,7 @@
                 <div
                   :class="['large', ttsIndex == index ? '' : 'stopanimate']"
                 ></div>
-              </div>
+              </div> -->
             </div>
 
             <p
@@ -349,8 +349,8 @@ import Axios from 'axios'
 import qs from 'qs'
 import Audio from '@/components/chatPage/audio.vue'
 import viewAnnouncement from '@/components/viewAnnouncement'
-import IatRecorder from '@/libs/js/IatRecorder.js'
-const iatRecorder = new IatRecorder('en_us', 'mandarin', '5fbb80a3')
+// import IatRecorder from '@/libs/js/IatRecorder.js'
+// const iatRecorder = new IatRecorder('en_us')
 export default {
   name: 'ChatInfo',
   props: {
@@ -393,10 +393,10 @@ export default {
       type: Boolean,
       default: false,
     },
-    isTts: {
-      type: Boolean,
-      default: true,
-    },
+    // isTts: {
+    //   type: Boolean,
+    //   default: true,
+    // },
     count: {
       type: Number,
       default: 20,
@@ -412,7 +412,7 @@ export default {
       newList: [],
       localeval: 'zh-CN',
       ttsIndex: null,
-      iatRecorder,
+      // iatRecorder,
     }
   },
   computed: {
@@ -449,12 +449,13 @@ export default {
       },
       deep: true,
     },
-    'iatRecorder.status': {
-      handler(newVal) {
-        newVal === 'endPlay' && (this.ttsIndex = null)
-      },
-      deep: true,
-    },
+    // 'iatRecorder.status': {
+    //   handler(newVal) {
+    //     ;(newVal === 'endPlay' || newVal === 'errorTTS') &&
+    //       (this.ttsIndex = null)
+    //   },
+    //   deep: true,
+    // },
   },
   methods: {
     // 来的消息显示在最下面
@@ -564,33 +565,33 @@ export default {
       localStorage.setItem('seller_code', this.userInfo.seller.seller_code)
       this.$router.push({ name: 'Message' })
     },
-    // 文字转语音开始
-    textChange() {
-      let that = this
-      if (
-        ['init', 'endPlay', 'errorTTS'].indexOf(this.iatRecorder.status) > -1
-      ) {
-        this.iatRecorder.start()
-      } else {
-        this.iatRecorder.stop()
-      }
-    },
-    // 文字转语音结束
-    translationEnd() {
-      this.iatRecorder.stop()
-    },
-    // 转语音的文字
-    translationStart(val, index) {
-      if (this.ttsIndex && this.ttsIndex === index) {
-        this.iatRecorder.stop()
-        return
-      }
-      this.ttsIndex = index
-      this.iatRecorder.setParams({
-        text: val,
-      })
-      this.textChange()
-    },
+    // // 文字转语音开始
+    // textChange() {
+    //   let that = this
+    //   if (
+    //     ['init', 'endPlay', 'errorTTS'].indexOf(this.iatRecorder.status) > -1
+    //   ) {
+    //     this.iatRecorder.start()
+    //   } else {
+    //     this.iatRecorder.stop()
+    //   }
+    // },
+    // // 文字转语音结束
+    // translationEnd() {
+    //   this.iatRecorder.stop()
+    // },
+    // // 转语音的文字
+    // translationStart(val, index) {
+    //   if (this.ttsIndex && this.ttsIndex === index) {
+    //     this.iatRecorder.stop()
+    //     return
+    //   }
+    //   this.ttsIndex = index
+    //   this.iatRecorder.setParams({
+    //     text: val,
+    //   })
+    //   this.textChange()
+    // },
   },
   mounted() {
     this.messageDown()

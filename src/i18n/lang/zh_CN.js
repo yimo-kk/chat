@@ -1,4 +1,7 @@
 module.exports = {
+  notPassword:'密码错误,请重新输入!',
+  password: '请输入密码!',
+  prompt: '提示',
   tts: '播放文字',
   noRecording: '暂无录音权限！',
   overLimit: '发送的消息内容超出发送长度啦',

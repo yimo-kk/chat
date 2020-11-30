@@ -1,6 +1,6 @@
 const appData = require("@/assets/emojis.json");
 // 压缩图片
-export function compressImage(file, success, error) {
+export function compressImage (file, success, error) {
   const name = file.name; //文件名
   const reader = new FileReader();
   reader.readAsDataURL(file);
@@ -43,7 +43,7 @@ export function compressImage(file, success, error) {
   };
 }
 // 判断是pc还是移动端
-export function whatPort() {
+export function whatPort () {
   if (/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
     return true;
   } else {
@@ -51,12 +51,12 @@ export function whatPort() {
   }
 }
 // 校验上传图片格式
-export function isImage(str) {
+export function isImage (str) {
   var reg = /\.(png|jpg|gif|jpeg|webp)$/;
   return !reg.test(str);
 }
 //base64转blob
-export function base64ToBlob(code) {
+export function base64ToBlob (code) {
   let parts = code.split(";base64,");
   let contentType = parts[0].split(":")[1];
   let raw = window.atob(parts[1]);
@@ -70,23 +70,23 @@ export function base64ToBlob(code) {
   return new Blob([uInt8Array], { type: contentType });
 }
 // 存 取 删 localStorage 修改为永久存储
-export function setStorage(name, value) {
+export function setStorage (name, value) {
   if (typeof value !== "string") {
     value = JSON.stringify(value);
   }
   localStorage.setItem(name, value);
 }
-export function getStorage(name) {
+export function getStorage (name) {
   if (localStorage.getItem(name)) {
     return localStorage.getItem(name);
   } else return "";
 }
-export function removeStorage(name) {
+export function removeStorage (name) {
   localStorage.removeItem(name);
-} 
+}
 // 表情转化
-export function conversion(input) {
-  if(!input)return
+export function conversion (input) {
+  if (!input) return
   const regexTab = [];
   for (let key of Object.keys(appData)) {
     regexTab.push({
@@ -99,8 +99,8 @@ export function conversion(input) {
   }
   return input;
 }
-export function conversionFace(input) {
-  if(!input)return
+export function conversionFace (input) {
+  if (!input) return
   for (let key of Object.keys(appData)) {
     input = input.replace(
       new RegExp(`\\[em_${key}\\]`, "g"),
@@ -110,13 +110,13 @@ export function conversionFace(input) {
   return input;
 }
 // 生成随机字符串
-function GetRandomNum(Min, Max) {
+function GetRandomNum (Min, Max) {
   var Range = Max - Min;
   var Rand = Math.random();
   return Min + Math.round(Rand * Range);
 }
 
-export function createUserName() {
+export function createUserName () {
   var ranNum = Math.ceil(Math.random() * 25);
   var letter = String.fromCharCode(65 + ranNum); //随机字母
   var day = new Date();
@@ -125,26 +125,26 @@ export function createUserName() {
   return letter + fullYear + rand;
 }
 
-export function isIE() {
-	if (!!window.ActiveXObject || "ActiveXObject" in window) {
-		return true;
-	} else {
-		return false;
-	}
+export function isIE () {
+  if (!!window.ActiveXObject || "ActiveXObject" in window) {
+    return true;
+  } else {
+    return false;
+  }
 }
 // 获取url参数
-export function getQueryString(name) {  
-  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");  
-  var r = window.location.search.substr(1).match(reg);  
+export function getQueryString (name) {
+  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+  var r = window.location.search.substr(1).match(reg);
   if (r != null) return decodeURI(r[2]);
-  return null;  
+  return null;
 }
-export function segmentation(string){
-  let obj={}
+export function segmentation (string) {
+  let obj = {}
   var vars = string.split("&");
-  for (var i=0;i<vars.length;i++) {
+  for (var i = 0; i < vars.length; i++) {
     var pair = vars[i].split("=");
-      obj[pair[0]]=pair[1]
+    obj[pair[0]] = pair[1]
   }
   return obj
 }
@@ -155,19 +155,38 @@ export function segmentation(string){
 * @returns {*} false校验失败， true校验成功
 */
 export function check (str, type) {
- let types = {
-   phone () { // 校验手机号
-     return this.typeCheckFn( /^1\d{10}$/.test(str))
-   },
-   idCard () { // 校验邮箱
-     let checkEmail = /^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$/
-     return this.typeCheckFn(checkEmail.test(str))
-   },
-   typeCheckFn (reg) { // 校验函数 reg校验规则
-     if (reg) return true
-     return false
-   },
- }
+  let types = {
+    phone () { // 校验手机号
+      return this.typeCheckFn(/^1\d{10}$/.test(str))
+    },
+    idCard () { // 校验邮箱
+      let checkEmail = /^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$/
+      return this.typeCheckFn(checkEmail.test(str))
+    },
+    typeCheckFn (reg) { // 校验函数 reg校验规则
+      if (reg) return true
+      return false
+    },
+  }
 
- return types[type]()
+  return types[type]()
+}
+/**
+ * 设置storage里面的数据
+ * @param {*} code 商家code
+ * @param {*} username 用户名
+ * @param {*} group_id 修改的key
+ * @param {*} val 修改的值
+ */
+export function setStorageData (code, username, group_id, val) {
+  let obj = {}
+  if (Object.keys(getStorage(code)).length) {
+    obj = JSON.parse(getStorage(code))
+    if (Array.isArray(obj[username]['groupList'])) {
+      obj[username]['groupList'].map(item => {
+        item.group_id === group_id && (item.isPassword = val)
+      })
+    }
+    setStorage(code, obj)
+  }
 }

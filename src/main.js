@@ -15,7 +15,9 @@ import i18n from './i18n';
 // 移动端调试
 // import Vconsole from "vconsole";
 // let vConsole = new Vconsole();
-
+// 自定义组件
+// import enterPopup from '@/components/popup/index.js'
+// Vue.use(enterPopup)
 
 // vant
 import {
@@ -32,6 +34,8 @@ import {
   NoticeBar,
   Form,
   Empty,
+  CellGroup,
+  Overlay,
   Loading
 } from "vant";
 Vue.use(Field)
@@ -47,6 +51,8 @@ Vue.use(Field)
   .use(Loading)
   .use(Form)
   .use(Empty)
+  .use(Overlay)
+  .use(CellGroup)
   .use(Sticky);
 // 全局过滤器
 import filters from "./libs/filters.js";

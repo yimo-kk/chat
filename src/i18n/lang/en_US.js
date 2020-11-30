@@ -1,4 +1,7 @@
 module.exports = {
+  notPassword:'Wrong password, please re-enter!',
+  password: 'Please enter password!',
+  prompt: 'Prompt',
   tts: 'Play text',
   noRecording: 'No recording permission temporarily!',
   overLimit: 'The content of the sent message exceeds the sending length',

@@ -72,7 +72,6 @@ const IatRecorder = class TTSRecorder {
   connectWebSocket () {
     this.setStatus('ttsing')
     return getWebsocketUrl().then(url => {
-      console.log(url)
       let ttsWS
       if ('WebSocket' in window) {
         ttsWS = new WebSocket(url)
@@ -95,8 +94,8 @@ const IatRecorder = class TTSRecorder {
       ttsWS.onerror = e => {
         clearTimeout(this.playTimeout)
         this.setStatus('errorTTS')
-        alert('WebSocket报错，请f12查看详情')
-        console.error(`详情查看：${encodeURI(url.replace('wss:', 'https:'))}`)
+        // alert('WebSocket报错，请f12查看详情')
+        // console.error(`详情查看：${encodeURI(url.replace('wss:', 'https:'))}`)
       }
       ttsWS.onclose = e => {
         console.log(e)
@@ -163,8 +162,9 @@ const IatRecorder = class TTSRecorder {
     let jsonData = JSON.parse(resultData)
     // 合成失败
     if (jsonData.code !== 0) {
-      alert(`合成失败: ${jsonData.code}:${jsonData.message}`)
-      console.error(`${jsonData.code}:${jsonData.message}`)
+      this.setStatus('errorTTS')
+      // alert(`合成失败: ${jsonData.code}:${jsonData.message}`)
+      // console.error(`${jsonData.code}:${jsonData.message}`)
       this.resetAudio()
       return
     }
@@ -198,7 +198,12 @@ const IatRecorder = class TTSRecorder {
     this.setStatus('play')
     let audioData = this.audioData.slice(this.audioDataOffset)
     this.audioDataOffset += audioData.length
-    let audioBuffer = this.audioContext.createBuffer(1, audioData.length, 22050)
+    let audioBuffer
+    try {
+      audioBuffer = this.audioContext.createBuffer(1, audioData.length, 22050)
+    } finally {
+      this.setStatus('endPlay')
+    }
     let nowBuffering = audioBuffer.getChannelData(0)
     if (audioBuffer.copyToChannel) {
       audioBuffer.copyToChannel(new Float32Array(audioData), 0, 0)
@@ -231,7 +236,7 @@ const IatRecorder = class TTSRecorder {
       try {
         this.bufferSource.stop()
       } catch (e) {
-        console.log(e)
+        this.setStatus('endPlay')
       }
     }
   }
@@ -243,6 +248,7 @@ const IatRecorder = class TTSRecorder {
         this.audioInit()
       }
       if (!this.audioContext) {
+        this.setStatus('endPlay')
         alert('该浏览器不支持webAudioApi相关接口')
         return
       }
