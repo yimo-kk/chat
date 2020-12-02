@@ -1,15 +1,14 @@
 <template>
   <div class="member">
     <img class="member_img" :src="name.headimg" alt="" />
-    <!-- <i class="icon iconfont icon-yonghuguanli1"></i> -->
-    <p v-if="name.type" class="name dwote">
+    <p v-if="name.type || name.kefu_id" class="name dwote">
       {{ name.username
       }}{{
         (name.groupKefu && name.groupKefu.length) || name.isAdmin | isAdmin
       }}
     </p>
     <p v-else class="name dwote">
-      {{ name.nickname[code] }}
+      {{ name.nickname }}
     </p>
   </div>
 </template>

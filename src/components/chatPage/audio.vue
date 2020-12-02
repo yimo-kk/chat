@@ -79,8 +79,8 @@ export default {
   }
 }
 .small {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-style: solid;
   border-top-color: transparent;
   border-left-color: transparent;
@@ -93,8 +93,8 @@ export default {
 }
 
 .middle {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 25px;
   border-style: solid;
   border-top-color: transparent;
   border-left-color: transparent;
@@ -129,8 +129,8 @@ export default {
   // margin: 0 0 0 15px;
 }
 .large {
-  width: 40px;
-  height: 40px;
+  width: 39px;
+  height: 34px;
   border-style: solid;
   border-top-color: transparent; //大专栏 纯css3配合vue实现微信语音播放效果;
   border-left-color: transparent;

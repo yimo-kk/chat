@@ -89,7 +89,7 @@
             <img class="head_portrait" :src="item.from_avatar" alt />
             <div style="margin: 0 10px;" class="chat_content_text_left">
               <span v-if="name" style="font-size: 12px;color:#ccc">{{
-                item.from_name
+                item.state === 1 ? item.from_name : item.nickname
               }}</span>
               <div v-if="item.type === 0" class="flex">
                 <span
@@ -99,7 +99,7 @@
                 >
                 <div
                   v-if="item.type == 0 && item.is_voice && !name"
-                  class="playIcon"
+                  class="playIcon flex"
                   status="stop"
                   :title="$t('tts')"
                   no="1"
@@ -176,6 +176,7 @@
               </div>
               <div v-else-if="item.type === 3" class="content left">
                 <Audio
+                  :time="true"
                   @play="
                     (isPlay) => {
                       playRecord(
@@ -249,7 +250,7 @@
           >
             <div style="margin: 0 10px;" class="chat_content_text_right">
               <p v-if="name" style="text-align: end;font-size: 12px;color:#ccc">
-                {{ username }}
+                {{ item.nickname }}
               </p>
               <span
                 style="white-space: pre-line;word-break: break-word;"
@@ -300,6 +301,7 @@
               </div>
               <div v-else-if="item.type === 3" class="content right">
                 <Audio
+                  :time="true"
                   @play="
                     (isPlay) => {
                       playRecord(

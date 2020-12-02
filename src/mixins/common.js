@@ -318,9 +318,8 @@ export default function () {
         if (bool) {
           audio.src = '';
           this.messages.forEach((item) => {
-            if (item.type == 3 || item.type == 0) {
-              item.message ? (item.message.play = false) : (item.play = false);
-            }
+            item.type == 3 && item.message ? (item.message.play = false) : (item.play = false);
+            item.type == 0 && (item.play = false)
           })
         } else {
           this.recordOne(index);
@@ -334,21 +333,21 @@ export default function () {
       },
       playEnd () {
         this.messages.forEach(item => {
-          if (item.type == 3) {
-            item.message ? (item.message.play = false) : (item.play = false);
-          } else if (item.type == 0) {
-            item.play = false
+          if (item.type == 3 || item.type == 0) {
+            item.type == 3 && item.message ? (item.message.play = false) : (item.play = false);
+            item.type == 0 && (item.play = false)
           }
         });
       },
       // 只能播放一个其他全为flase
       recordOne (value) {
         this.messages.forEach((item, index) => {
-          if (index === value && (item.type == 3)) {
-            item.message ? (item.message.play = true) : (item.play = true);
-          }
-          else if (index === value && item.type == 0) {
-            item.play = true
+          if (index === value) {
+            item.type == 3 && (item.message ? (item.message.play = true) : (item.play = true))
+            item.type == 0 && (item.play = true)
+          } else {
+            item.type == 3 && (item.message ? (item.message.play = false) : (item.play = false))
+            item.type == 0 && (item.play = false)
           }
         });
       },
@@ -403,7 +402,7 @@ export default function () {
         data.group_id &&
           this.$store.commit("setGroupId", data.group_id);
       },
-      //  商家:{用户名:客服}    商家:{用户名:{客服名:客服,群id:id,isPassword:false,password:null}}
+      // 商家:{用户名:{客服名:客服,群id:id,isPassword:false,password:null}}
       // 判断是否有商家code等参数
       judgment (fn) {
         return new Promise(async (resolve, reject) => {

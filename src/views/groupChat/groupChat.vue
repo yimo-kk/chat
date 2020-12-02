@@ -30,7 +30,7 @@
             <div class="handle_other">
               <van-icon
                 class="iconfont faceShow font_size"
-                size="1.8rem"
+                size="1.6rem"
                 class-prefix="icon"
                 slot="right-icon"
                 name="buoumaotubiao49"
@@ -173,7 +173,7 @@ import pcChatList from '@/components/pcChatList/pcChatList.vue'
 import ChatInfo from '@/components/chatPage/chatInfo.vue'
 import enterPopup from '@/components/popup/enterPopup.vue'
 import common from '@/mixins/common'
-import { setStorageData, getStorage } from '@/libs/utils.js'
+
 import {
   getGroupChatLog,
   sendGroupChatFile,
@@ -184,6 +184,8 @@ import {
 } from '@/api/chat.js'
 
 import {
+  setStorageData,
+  getStorage,
   compressImage,
   isImage,
   conversion,
@@ -358,15 +360,18 @@ export default {
     },
     // 修改成员昵称
     saveNickname(data) {
-      console.log(data, 3333)
       this.messages.push(data)
       if (this.groupMember.data.length) {
         this.groupMember.data.forEach((item) => {
           if (data.group_id == this.gid && data.uid == item.uid) {
-            item.nickname[data.seller_code] = data.nickname
+            item.nickname = data.nickname
           }
         })
       }
+      let newUserData = JSON.parse(JSON.stringify(this.userInfo))
+      newUserData.data.nickname[this.userInfo.seller.seller_code] =
+        data.nickname
+      this.$store.commit('setUserInfo', newUserData)
     },
   },
   methods: {
@@ -382,6 +387,7 @@ export default {
         group_id: this.gid,
         seller_code: this.userInfo.seller.seller_code,
         state: 0,
+        nickname: this.userInfo.data.nickname[this.userInfo.seller.seller_code],
         type: this.sendType,
         is_invite: this.is_invite,
         from_ip: this.userIp.ip,
@@ -463,10 +469,7 @@ export default {
     getGroupList(group_id) {
       getGroupList({ group_id, seller_code: this.userInfo.seller.seller_code })
         .then((result) => {
-          this.groupMember.data = result.data.data.map((item) => {
-            item.nickname && (item = rule(item))
-            return item
-          })
+          this.groupMember.data = result.data.data
           this.$set(this.groupMember, 'num', result.data.data.length)
         })
         .catch((err) => {
@@ -505,14 +508,11 @@ export default {
               }
             })
           } else {
-            // debugger
             let index = this.memberVal(that.groupMember.data).indexOf(
               data.username
             )
             if (index != -1) {
               that.groupMember.data.splice(index, 1)
-              console.log(that.groupMember)
-              // debugger
             }
           }
         },
@@ -526,7 +526,6 @@ export default {
           }
         },
       }
-      // data.group_id == this.gid &&
       method[opt](data)
     },
     pcStopService() {
