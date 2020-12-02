@@ -90,9 +90,11 @@ export default function () {
         if (this.$store.state.code) {
           params.code = this.$store.state.code
         }
+        this.loading = true
         this.$store
           .dispatch("getUsersData", params)
           .then((res) => {
+            this.loading = false
             this.userIp = {
               ip: res.data.login_ip,
               address: res.data.area
@@ -105,6 +107,7 @@ export default function () {
             callback()
           })
           .catch(err => {
+            this.loading = false
             this.$toast(err.msg);
           });
       },
@@ -272,19 +275,6 @@ export default function () {
         this.loading = true
         this.outTime = false
         callback(formdata)
-        // uploadVoice({
-        //   params: formdata,
-        //   seller_code: this.userInfo.seller.seller_code
-        // })
-        //   .then(result => {
-        //     this.loading=false
-        //     let data = result.data.data;
-        //     data.duration = Math.round(recorder.duration);
-        //     this.send(data);
-        //   })
-        //   .catch(err => {
-        //     this.loading=false
-        //   });
       },
       /**
        * 绘制波浪图-录音
@@ -328,7 +318,7 @@ export default function () {
         if (bool) {
           audio.src = '';
           this.messages.forEach((item) => {
-            if (item.type == 3) {
+            if (item.type == 3 || item.type == 0) {
               item.message ? (item.message.play = false) : (item.play = false);
             }
           })
@@ -346,16 +336,19 @@ export default function () {
         this.messages.forEach(item => {
           if (item.type == 3) {
             item.message ? (item.message.play = false) : (item.play = false);
+          } else if (item.type == 0) {
+            item.play = false
           }
         });
       },
       // 只能播放一个其他全为flase
       recordOne (value) {
         this.messages.forEach((item, index) => {
-          if (index === value && item.type == 3) {
+          if (index === value && (item.type == 3)) {
             item.message ? (item.message.play = true) : (item.play = true);
-          } else if (item.type == 3) {
-            item.message ? (item.message.play = false) : (item.play = false);
+          }
+          else if (index === value && item.type == 0) {
+            item.play = true
           }
         });
       },
@@ -416,8 +409,10 @@ export default function () {
         return new Promise(async (resolve, reject) => {
           let u = getQueryString('u')
           let code = getQueryString('code')
+          this.loading = true
           await userDecode({ u, code })
             .then((result) => {
+              this.loading = false
               if (!result.data.data) {
                 this.$dialog.alert({
                   message: '商家不存在或参数错误！',

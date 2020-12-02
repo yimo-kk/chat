@@ -6,6 +6,9 @@
         ? 'activity_contentTop'
         : 'contentTop',
     ]"
+    :style="{
+      backgroundImage: `url(${name ? currentGroupimg : ''})`,
+    }"
     ref="chatInfo"
   >
     <div class="more_chat_log ">
@@ -29,6 +32,7 @@
             {{ localeval == 'zh-CN' ? 'En' : 'Zh' }}
           </span>
         </div>
+        <!-- 返回 -->
         <!-- <div class="go_back">
           <van-icon
             class="iconfont"
@@ -74,25 +78,45 @@
         </p>
       </div>
       <div v-for="(item, index) in messages" :key="index">
-        <div class="flex_center" style="color:#ccc; fontSize:12px">
-          <p>{{ isViewDate(index) ? item.create_time : '' }}</p>
-        </div>
-        <div
-          class="record"
-          v-if="item.from_name != username && !item.kefu_name"
-        >
-          <img class="head_portrait" :src="item.from_avatar" alt />
-          <div style="margin: 0 10px;" class="chat_content_text_left">
-            <span v-if="name" style="font-size: 12px;color:#ccc">{{
-              item.from_name
-            }}</span>
-            <div v-if="item.type === 0" class="flex">
-              <span
-                style="white-space: pre-line;word-break: break-word;"
-                class="content left"
-                >{{ item.content || item.message }}</span
-              >
-              <!-- <div
+        <div v-if="item.state != 2">
+          <div class="flex_center" style="color:#ccc; fontSize:12px">
+            <p>{{ isViewDate(index) ? item.create_time : '' }}</p>
+          </div>
+          <div
+            class="record"
+            v-if="item.from_name != username && !item.kefu_name"
+          >
+            <img class="head_portrait" :src="item.from_avatar" alt />
+            <div style="margin: 0 10px;" class="chat_content_text_left">
+              <span v-if="name" style="font-size: 12px;color:#ccc">{{
+                item.from_name
+              }}</span>
+              <div v-if="item.type === 0" class="flex">
+                <span
+                  style="white-space: pre-line;word-break: break-word;"
+                  class="content left"
+                  >{{ item.content || item.message }}</span
+                >
+                <div
+                  v-if="item.type == 0 && item.is_voice && !name"
+                  class="playIcon"
+                  status="stop"
+                  :title="$t('tts')"
+                  no="1"
+                >
+                  <Audio
+                    :time="false"
+                    @play="
+                      (isPlay) => {
+                        playRecord(item.voice_path, index, isPlay)
+                      }
+                    "
+                    :isPlay="item.play"
+                    :data="item"
+                  ></Audio>
+                </div>
+                <!-- 文字转语音图标 -->
+                <!-- <div
                 v-if="isTts"
                 class="playIcon"
                 status="stop"
@@ -108,194 +132,199 @@
                   :class="['large', ttsIndex == index ? '' : 'stopanimate']"
                 ></div>
               </div> -->
-            </div>
-
-            <p
-              v-else-if="item.type === 1"
-              class="content left"
-              style="padding:4px"
-            >
-              <img
-                @load="loadImg"
-                @click="imageView(index, item.content || item.message)"
-                class="send_img send_img_left"
-                :src="item.content || item.message"
-                alt
-              />
-            </p>
-            <div
-              :title="$t('download')"
-              v-else-if="item.type === 2"
-              class="left fileView"
-              style="display: flex;
-                  align-items: center;"
-              @click="
-                downloadFile(item.content || item.message, item.file_alias)
-              "
-            >
-              <div class="file_name" style="align-items: flex-end;">
-                <span style="color:#000">{{
-                  (item.message && item.message.filename) || item.file_alias
-                }}</span>
-                <span style="color: #ccc;margin: 6px;font-size: 10px;">{{
-                  (item.message && item.message.filesize) || item.file_size
-                }}</span>
               </div>
-              <p style="padding-left:10px">
-                <van-icon
-                  color="#B18904"
-                  size="40"
-                  class="iconfont"
-                  class-prefix="icon"
-                  name="wenjian"
-                ></van-icon>
-              </p>
-            </div>
-            <div v-else-if="item.type === 3" class="content left">
-              <Audio
-                @play="
-                  (isPlay) => {
-                    playRecord(
-                      item.content ? item.content : item.message.src,
-                      index,
-                      isPlay
-                    )
-                  }
-                "
-                :isPlay="item.message ? item.message.play : item.play"
-                :data="item"
-              ></Audio>
-            </div>
-            <div v-if="item.endChat" class="api_list score">
-              <p class="score_title">{{ $t('score') }}</p>
-              <van-rate
-                style="padding：0 1rem"
-                v-model="item.scoreNum"
-                void-icon="star"
-                color="#ffd21e"
-                :readonly="item.isScore"
-              />
-              <van-field
-                v-model="item.scoreMessage"
-                rows="2"
-                autosize
-                type="textarea"
-                maxlength="50"
-                :placeholder="$t('opinion')"
-                show-word-limit
-                :readonly="item.isScore"
-              />
-              <van-button
-                :color="item.isScore ? '#ccc' : '#12a0cc'"
-                @click="submit(index, item.isScore)"
-                :disabled="item.isScore"
-                size="mini"
-                >{{
-                  item.isScore ? $t('Evaluated') : $t('Evaluation')
-                }}</van-button
+              <p
+                v-else-if="item.type === 1"
+                class="content left"
+                style="padding:4px"
               >
-            </div>
-            <div v-if="item.isApi">
-              <div v-if="item.apiList && item.apiList.length" class="api_list">
-                <span class="select_or_view">{{ $t('viewOrSelect') }}</span>
-                <p
-                  v-for="(val, apiIndex) in item.apiList"
-                  :key="apiIndex"
-                  class="api_list_item"
-                  @click="getApicontent(val.api_id)"
-                >
-                  <a class="dwote">{{ val.api_title }}</a>
+                <img
+                  @load="loadImg"
+                  @click="imageView(index, item.content || item.message)"
+                  class="send_img send_img_left"
+                  :src="item.content || item.message"
+                  alt
+                />
+              </p>
+              <div
+                :title="$t('download')"
+                v-else-if="item.type === 2"
+                class="left fileView"
+                style="display: flex;
+                  align-items: center;"
+                @click="
+                  downloadFile(item.content || item.message, item.file_alias)
+                "
+              >
+                <div class="file_name" style="align-items: flex-end;">
+                  <span style="color:#000">{{
+                    (item.message && item.message.filename) || item.file_alias
+                  }}</span>
+                  <span style="color: #ccc;margin: 6px;font-size: 10px;">{{
+                    (item.message && item.message.filesize) || item.file_size
+                  }}</span>
+                </div>
+                <p style="padding-left:10px">
                   <van-icon
+                    color="#B18904"
+                    size="40"
                     class="iconfont"
-                    size="12px"
                     class-prefix="icon"
-                    name="iconfontzhizuobiaozhun19"
+                    name="wenjian"
                   ></van-icon>
                 </p>
               </div>
-              <p v-else class="api_list_content">{{ item.content }}</p>
-            </div>
-          </div>
-        </div>
-        <div
-          class="record record_right"
-          v-else-if="item.from_name == username && !item.kefu_name"
-        >
-          <div style="margin: 0 10px;" class="chat_content_text_right">
-            <p v-if="name" style="text-align: end;font-size: 12px;color:#ccc">
-              {{ username }}
-            </p>
-            <span
-              style="white-space: pre-line;word-break: break-word;"
-              v-if="item.type === 0"
-              class="content right"
-              >{{ item.message || item.content }}</span
-            >
-            <p
-              v-else-if="item.type === 1"
-              class="content right"
-              style="padding:4px"
-            >
-              <img
-                @load="loadImg"
-                @click="imageView(index, item.content || item.message)"
-                class="send_img send_img_right"
-                :src="item.content || item.message"
-                alt
-              />
-            </p>
-            <div
-              :title="$t('download')"
-              v-else-if="item.type === 2"
-              class="right fileView"
-              style="display: flex;
-                  align-items: center;"
-              @click="
-                downloadFile(item.content || item.message, item.file_alias)
-              "
-            >
-              <p style="padding-right:10px">
-                <van-icon
-                  color="#B18904"
-                  size="40"
-                  class="iconfont"
-                  class-prefix="icon"
-                  name="wenjian"
-                ></van-icon>
-              </p>
-              <div class="file_name">
-                <span style="color:#000">{{
-                  (item.message && item.message.filename) || item.file_alias
-                }}</span>
-                <span style="color: #ccc;margin: 6px;font-size: 10px;">{{
-                  (item.message && item.message.filesize) || item.file_alias
-                }}</span>
+              <div v-else-if="item.type === 3" class="content left">
+                <Audio
+                  @play="
+                    (isPlay) => {
+                      playRecord(
+                        item.content ? item.content : item.message.src,
+                        index,
+                        isPlay
+                      )
+                    }
+                  "
+                  :isPlay="item.message ? item.message.play : item.play"
+                  :data="item"
+                ></Audio>
+              </div>
+              <div v-if="item.endChat" class="api_list score">
+                <p class="score_title">{{ $t('score') }}</p>
+                <van-rate
+                  style="padding：0 1rem"
+                  v-model="item.scoreNum"
+                  void-icon="star"
+                  color="#ffd21e"
+                  :readonly="item.isScore"
+                />
+                <van-field
+                  v-model="item.scoreMessage"
+                  rows="2"
+                  autosize
+                  type="textarea"
+                  maxlength="50"
+                  :placeholder="$t('opinion')"
+                  show-word-limit
+                  :readonly="item.isScore"
+                />
+                <van-button
+                  :color="item.isScore ? '#ccc' : '#12a0cc'"
+                  @click="submit(index, item.isScore)"
+                  :disabled="item.isScore"
+                  size="mini"
+                  >{{
+                    item.isScore ? $t('Evaluated') : $t('Evaluation')
+                  }}</van-button
+                >
+              </div>
+              <div v-if="item.isApi">
+                <div
+                  v-if="item.apiList && item.apiList.length"
+                  class="api_list"
+                >
+                  <span class="select_or_view">{{ $t('viewOrSelect') }}</span>
+                  <p
+                    v-for="(val, apiIndex) in item.apiList"
+                    :key="apiIndex"
+                    class="api_list_item"
+                    @click="getApicontent(val.api_id)"
+                  >
+                    <a class="dwote">{{ val.api_title }}</a>
+                    <van-icon
+                      class="iconfont"
+                      size="12px"
+                      class-prefix="icon"
+                      name="iconfontzhizuobiaozhun19"
+                    ></van-icon>
+                  </p>
+                </div>
+                <p v-else class="api_list_content">{{ item.content }}</p>
               </div>
             </div>
-            <div v-else-if="item.type === 3" class="content right">
-              <Audio
-                @play="
-                  (isPlay) => {
-                    playRecord(
-                      item.content ? item.content : item.message.src,
-                      index,
-                      isPlay
-                    )
-                  }
-                "
-                :isPlay="item.message ? item.message.play : item.play"
-                :data="item"
-              ></Audio>
-            </div>
           </div>
-          <img class="head_portrait" :src="item.from_avatar" alt />
+          <div
+            class="record record_right"
+            v-else-if="item.from_name == username && !item.kefu_name"
+          >
+            <div style="margin: 0 10px;" class="chat_content_text_right">
+              <p v-if="name" style="text-align: end;font-size: 12px;color:#ccc">
+                {{ username }}
+              </p>
+              <span
+                style="white-space: pre-line;word-break: break-word;"
+                v-if="item.type === 0"
+                class="content right"
+                >{{ item.message || item.content }}</span
+              >
+              <p
+                v-else-if="item.type === 1"
+                class="content right"
+                style="padding:4px"
+              >
+                <img
+                  @load="loadImg"
+                  @click="imageView(index, item.content || item.message)"
+                  class="send_img send_img_right"
+                  :src="item.content || item.message"
+                  alt
+                />
+              </p>
+              <div
+                :title="$t('download')"
+                v-else-if="item.type === 2"
+                class="right fileView"
+                style="display: flex;
+                  align-items: center;"
+                @click="
+                  downloadFile(item.content || item.message, item.file_alias)
+                "
+              >
+                <p style="padding-right:10px">
+                  <van-icon
+                    color="#B18904"
+                    size="40"
+                    class="iconfont"
+                    class-prefix="icon"
+                    name="wenjian"
+                  ></van-icon>
+                </p>
+                <div class="file_name">
+                  <span style="color:#000">{{
+                    (item.message && item.message.filename) || item.file_alias
+                  }}</span>
+                  <span style="color: #ccc;margin: 6px;font-size: 10px;">{{
+                    (item.message && item.message.filesize) || item.file_alias
+                  }}</span>
+                </div>
+              </div>
+              <div v-else-if="item.type === 3" class="content right">
+                <Audio
+                  @play="
+                    (isPlay) => {
+                      playRecord(
+                        item.content ? item.content : item.message.src,
+                        index,
+                        isPlay
+                      )
+                    }
+                  "
+                  :isPlay="item.message ? item.message.play : item.play"
+                  :data="item"
+                ></Audio>
+              </div>
+            </div>
+            <img class="head_portrait" :src="item.from_avatar" alt />
+          </div>
         </div>
         <div
-          v-if="item.kefu_name === 'kefu'"
+          v-if="item.kefu_name === 'kefu' || item.state == 2"
           class="flex_center"
           style="marginBottom:10px"
         >
-          <p style="color:#ccc;fontSize:0.8rem">{{ item.message }}</p>
+          <p style="color:#ccc;fontSize:0.8rem">
+            {{ item.message || item.content }}
+          </p>
         </div>
         <div
           v-if="item.kefu_name === 'message'"
@@ -393,10 +422,10 @@ export default {
       type: Boolean,
       default: false,
     },
-    // isTts: {
-    //   type: Boolean,
-    //   default: true,
-    // },
+    currentGroupimg: {
+      type: String,
+      default: '',
+    },
     count: {
       type: Number,
       default: 20,
@@ -592,6 +621,7 @@ export default {
     //   })
     //   this.textChange()
     // },
+    translationStart() {},
   },
   mounted() {
     this.messageDown()

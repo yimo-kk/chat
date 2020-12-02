@@ -22,6 +22,7 @@
           :isMore="isMore"
           :count="count"
           @getLog="getLog"
+          :currentGroupimg="currentGroupimg"
         ></ChatInfo>
         <!-- 聊天输入框 -->
         <div class="input_tab">
@@ -181,6 +182,7 @@ import {
   checkGroupPwd,
   getGroupData,
 } from '@/api/chat.js'
+
 import {
   compressImage,
   isImage,
@@ -189,6 +191,7 @@ import {
   createUserName,
   setStorage,
   isIE,
+  rule,
 } from '@/libs/utils.js'
 export default {
   name: 'groupChat',
@@ -206,7 +209,10 @@ export default {
       sendType: null,
       isMask: false, // 录音时的波浪
       chatTitle: '',
-      groupMember: {},
+      groupMember: {
+        data: [],
+        num: null,
+      },
       isGroupUser: {
         state: false,
         message: '',
@@ -222,6 +228,7 @@ export default {
       currentUid: null,
       currentUsername: '',
       currentHeadimg: '',
+      currentGroupimg: '',
     }
   },
   computed: {
@@ -255,6 +262,7 @@ export default {
         username: this.username,
         group_id: this.gid,
         seller_code: this.code || this.userInfo.seller.seller_code,
+        nickname: this.userInfo.data.nickname,
       })
     },
     // 收到群消息
@@ -348,6 +356,18 @@ export default {
         }
       }
     },
+    // 修改成员昵称
+    saveNickname(data) {
+      console.log(data, 3333)
+      this.messages.push(data)
+      if (this.groupMember.data.length) {
+        this.groupMember.data.forEach((item) => {
+          if (data.group_id == this.gid && data.uid == item.uid) {
+            item.nickname[data.seller_code] = data.nickname
+          }
+        })
+      }
+    },
   },
   methods: {
     // 发送消息
@@ -409,6 +429,7 @@ export default {
               group_id: this.gid,
               seller_code: this.userInfo.seller.seller_code,
               headimg: this.userInfo.data.headimg,
+              nickname: this.userInfo.data.nickname,
             })
             this.is_invite = result.data.group.is_invite
             this.chatTitle = result.data.group_name
@@ -442,8 +463,11 @@ export default {
     getGroupList(group_id) {
       getGroupList({ group_id, seller_code: this.userInfo.seller.seller_code })
         .then((result) => {
-          result.data.data = Object.values(result.data.data)
-          this.groupMember = result.data
+          this.groupMember.data = result.data.data.map((item) => {
+            item.nickname && (item = rule(item))
+            return item
+          })
+          this.$set(this.groupMember, 'num', result.data.data.length)
         })
         .catch((err) => {
           console.log(err)
@@ -481,18 +505,25 @@ export default {
               }
             })
           } else {
+            // debugger
             let index = this.memberVal(that.groupMember.data).indexOf(
               data.username
             )
             if (index != -1) {
               that.groupMember.data.splice(index, 1)
+              console.log(that.groupMember)
+              // debugger
             }
           }
         },
         memberVal(list) {
-          return list.map((item) => {
-            return item.username
-          })
+          if (!list) {
+            return []
+          } else {
+            return list.map((item) => {
+              return item.username
+            })
+          }
         },
       }
       // data.group_id == this.gid &&
@@ -577,17 +608,20 @@ export default {
     },
     // 获取群是否需要邀请
     getGroupData() {
+      this.loading = true
       getGroupData({
         group_id: this.gid,
         seller_code: this.userInfo.seller.seller_code,
         username: this.username,
       })
         .then(async (result) => {
+          this.loading = false
           this.on_file = result.data.group.on_file
           this.on_voice = result.data.group.on_voice
           this.currentUid = result.data.users.uid
           this.currentUsername = result.data.users.username
           this.currentHeadimg = result.data.users.headimg
+          this.currentGroupimg = result.data.group.group_avatar
           let oldPassword
           JSON.parse(getStorage(this.code))[result.data.users.username][
             'groupList'
@@ -609,6 +643,7 @@ export default {
           }
         })
         .catch((err) => {
+          this.loading = false
           console.log(err)
         })
     },

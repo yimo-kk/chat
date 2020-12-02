@@ -3,68 +3,72 @@
     <p
       class="time"
       style="marginleft:10px"
-      v-if="playdata.from_name === $store.state.username "
-    >{{playdata.file_duration || playdata.message.duration}}"</p>
+      v-if="playdata.from_name === $store.state.username && time"
+    >
+      {{ playdata.file_duration || playdata.message.duration }}"
+    </p>
     <div
-      :class="['cricleplay',playdata.from_name ===  $store.state.username ? 'different':'']"
+      :class="[
+        'cricleplay',
+        playdata.from_name === $store.state.username ? 'different' : '',
+      ]"
       status="stop"
       no="1"
     >
       <div class="small"></div>
-      <div :class="['middle',play?'':'stopanimate']"></div>
-      <div :class="['large',play?'':'stopanimate']"></div>
+      <div :class="['middle', play ? '' : 'stopanimate']"></div>
+      <div :class="['large', play ? '' : 'stopanimate']"></div>
     </div>
-    <p
-      class="time"
-      v-if="playdata.from_name !==  $store.state.username "
-    >{{playdata.file_duration || playdata.message.duration}}"</p>
+    <p class="time" v-if="playdata.from_name !== $store.state.username && time">
+      {{ playdata.file_duration || playdata.message.duration }}"
+    </p>
   </div>
 </template>
 
 <script>
 export default {
-  name: "Audio",
+  name: 'Audio',
   props: {
     data: {
       type: Object,
       default: () => {
-        return {};
-      }
+        return {}
+      },
     },
     isPlay: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
+    time: Boolean,
   },
   data() {
     return {
       playdata: JSON.parse(JSON.stringify(this.data)),
-      play: JSON.parse(JSON.stringify(this.isPlay))
-    };
+      play: JSON.parse(JSON.stringify(this.isPlay)),
+    }
   },
   computed: {},
   watch: {
     isPlay(val) {
-      this.play = this.isPlay;
+      this.play = this.isPlay
     },
     data: {
       handler: function(val) {
-        this.playdata = JSON.parse(JSON.stringify(val));
+        this.playdata = JSON.parse(JSON.stringify(val))
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
   methods: {
     audio() {
-      this.$emit("play",this.isPlay);
-    }
+      this.$emit('play', this.isPlay)
+    },
   },
   created() {},
-  mounted() {
-  }
-};
+  mounted() {},
+}
 </script>
-<style lang='less' scoped>
+<style lang="less" scoped>
 .record_content {
   display: flex;
   align-items: center;

@@ -190,3 +190,8 @@ export function setStorageData (code, username, group_id, val) {
     setStorage(code, obj)
   }
 }
+export function rule (data) {
+  let str = JSON.parse(JSON.stringify(data))
+  str.nickname = eval('(' + str.nickname + ')')
+  return str
+}

@@ -278,8 +278,10 @@ export default {
       this.$store.dispatch('playPromptVuex')
       this.$store.commit('titleScrolling')
       data.type === 3 && (data.message.play = false)
-      data.type === 0 &&
-        (data.message = conversionFace(data.content || data.message))
+      if (data.type === 0) {
+        data.message = conversionFace(data.content || data.message)
+        data.play = false
+      }
       data.create_time = this.$dayjs().format('YYYY-MM-DD HH:mm:ss')
       this.messages.push(data)
     },
@@ -287,7 +289,10 @@ export default {
       let message = JSON.parse(JSON.stringify(data))
       if (data.from_name === this.userInfo.data.username) {
         data.type === 3 && (message.message.play = false)
-        data.type === 0 && (message.message = conversionFace(data.message))
+        if (data.type === 0) {
+          message.message = conversionFace(data.message)
+          message.play = false
+        }
         message.create_time = data.createtime
         this.messages.push(message)
       }
@@ -318,9 +323,7 @@ export default {
         from_ip: this.userIp.ip,
       }
       let sendMessage = JSON.parse(JSON.stringify(my_send))
-      // this.sendType === 3 && (my_send.message.play = false);
       this.sendType === 0 && (sendMessage.message = conversion(my_send.message))
-      // this.messages.push(my_send);
       this.$socket.emit('message', sendMessage)
       this.sendText = ''
       this.faceShow = false
@@ -406,6 +409,7 @@ export default {
               item.content
                 ? (item.content = conversionFace(item.content))
                 : (item.message = conversionFace(item.message))
+              item.play = false
             }
             return item
           })

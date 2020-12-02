@@ -51,7 +51,6 @@ export default {
   },
   methods: {
     viewPasswrod(val) {
-      console.log(this.eye)
       this.eye === 'closed-eye' ? (this.eye = 'eye') : (this.eye = 'closed-eye')
     },
     onSubmit() {
