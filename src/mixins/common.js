@@ -379,7 +379,7 @@ export default function () {
       },
       handleBusinessUser (code, data) {
         let obj = {}
-        let valueObj = { 'kefu_code': '', 'groupList': [{ 'group_id': data.group_id, 'isPassword': false }] }
+        let valueObj = { 'kefu_code': '', 'groupList': [{ 'group_id': data.group_id || '', 'isPassword': false }] }
         if (getStorage(code)) {
           obj = JSON.parse(getStorage(code))
           let nowObj = {}
@@ -390,7 +390,9 @@ export default function () {
             let isExist = obj[data.username]['groupList'].some(item => {
               return item.group_id == data.group_id
             })
-            !isExist && obj[data.username]['groupList'].push({ 'group_id': data.group_id, 'isPassword': false })
+            if (!isExist && data.group_id) {
+              obj[data.username]['groupList'].push({ 'group_id': data.group_id || '', 'isPassword': false })
+            }
             setStorage(code, JSON.stringify(obj))
           }
         } else {
@@ -409,31 +411,41 @@ export default function () {
           let u = getQueryString('u')
           let code = getQueryString('code')
           this.loading = true
-          await userDecode({ u, code })
-            .then((result) => {
-              this.loading = false
-              if (!result.data.data) {
-                this.$dialog.alert({
-                  message: '商家不存在或参数错误！',
-                  showConfirmButton: false,
-                  showCancelButton: false
-                })
-                return
-              }
-              let data = segmentation(result.data.data)
-              // 当解密没有name时创建一个随机name
-              if (!data.username) {
-                (getStorage(code) && Object.keys(JSON.parse(getStorage(code))).length) ?
-                  data.username = Object.keys(JSON.parse(getStorage(code)))[0] :
-                  data.username = createUserName()
-              }
-              this.handleBusinessUser(code, data)
-              resolve()
+          if (u) {
+            await userDecode({ u, code })
+              .then((result) => {
+                this.loading = false
+                if (!result.data.data) {
+                  this.$dialog.alert({
+                    message: '商家不存在或参数错误！',
+                    showConfirmButton: false,
+                    showCancelButton: false
+                  })
+                  return
+                }
+                let data = segmentation(result.data.data)
+                // 当解密没有name时创建一个随机name
+                if (!data.username) {
+                  (getStorage(code) && Object.keys(JSON.parse(getStorage(code))).length) ?
+                    data.username = Object.keys(JSON.parse(getStorage(code)))[0] :
+                    data.username = createUserName()
+                }
+                this.handleBusinessUser(code, data)
+                resolve()
 
-            })
-            .catch(err => {
-              reject(err);
-            });
+              })
+              .catch(err => {
+                reject(err);
+              });
+          } else {
+            let business = getStorage(code)
+            let name = business && Object.keys(JSON.parse(business))[0]
+            let data = {
+              username: name || createUserName()
+            }
+            this.handleBusinessUser(code, data)
+            resolve()
+          }
         })
       }
     },

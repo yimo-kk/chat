@@ -520,7 +520,7 @@ export default {
       })
     },
     // 下载文件
-    downloadFile(content, fileName) {
+    downloadFile(content, filename) {
       try {
         let dUrl
         typeof content == 'string' ? (dUrl = content) : (dUrl = content.src)
@@ -551,6 +551,7 @@ export default {
           aLink.click()
         }
       } catch (error) {
+        console.log(error)
         this.$toast(this.$t('fileErr'))
       }
     },

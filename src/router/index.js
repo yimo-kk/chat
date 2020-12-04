@@ -5,11 +5,18 @@ import VueRouter from "vue-router";
 Vue.use(VueRouter);
 
 const routes = [
+  // 根路径暂时重定向到客服聊天界面
   {
     path: "/",
+    name: "home",
+    redirect: { name: 'ChatPage' },
+  },
+  {
+    path: "/serviceChat",
     name: "ChatPage",
+
     component: () =>
-        import(/* webpackChunkName: "serviceChat" */ "../views/chatPage/chatPage.vue")
+      import(/* webpackChunkName: "serviceChat" */ "../views/chatPage/chatPage.vue")
   },
   // {
   //   path: "/chatList",

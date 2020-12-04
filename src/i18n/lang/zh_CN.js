@@ -1,5 +1,5 @@
 module.exports = {
-  notPassword:'密码错误,请重新输入!',
+  notPassword: '密码错误,请重新输入!',
   password: '请输入密码!',
   prompt: '提示',
   tts: '播放文字',
@@ -27,6 +27,7 @@ module.exports = {
   Evaluated: '已评价',
   viewOrSelect: '请选择/查看',
   noMember: '你不是当前群成员！',
+  notGroup: '当前群不存在！',
   disband: '管理员解散了当前群聊！',
   message: '你的留言',
   mailbox: '邮箱',

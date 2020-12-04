@@ -607,6 +607,13 @@ export default {
     },
     // 获取群是否需要邀请
     getGroupData() {
+      if (!this.gid) {
+        this.isGroupUser = {
+          state: true,
+          message: this.$t('notGroup'),
+        }
+        return
+      }
       this.loading = true
       getGroupData({
         group_id: this.gid,

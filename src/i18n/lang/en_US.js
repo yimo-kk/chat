@@ -1,5 +1,5 @@
 module.exports = {
-  notPassword:'Wrong password, please re-enter!',
+  notPassword: 'Wrong password, please re-enter!',
   password: 'Please enter password!',
   prompt: 'Prompt',
   tts: 'Play text',
@@ -27,6 +27,7 @@ module.exports = {
   Evaluated: 'Evaluated',
   viewOrSelect: 'Please select/view',
   noMember: 'You are not a member of the current group!',
+  notGroup: 'The current group does not exist!',
   disband: 'The administrator canceled the current group chat!',
   message: 'Your message',
   mailbox: 'Email',
