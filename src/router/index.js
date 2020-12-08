@@ -41,6 +41,12 @@ const routes = [
     name: "Message",
     component: () =>
       import(/* webpackChunkName: "Message" */ "../views/message/index.vue")
+  },
+  {
+    path: "/test_webrtc",
+    name: "TestWebrtc",
+    component: () =>
+      import(/* webpackChunkName: "Message" */ "../views/test_webrtc/index.vue")
   }
 ];
 
