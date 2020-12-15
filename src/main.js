@@ -36,9 +36,13 @@ import {
   Empty,
   CellGroup,
   Overlay,
-  Loading
+  Loading,
+  Collapse,
+  CollapseItem
 } from "vant";
 Vue.use(Field)
+  .use(Collapse)
+  .use(CollapseItem)
   .use(Uploader)
   .use(Icon)
   .use(Toast)
@@ -73,7 +77,11 @@ Vue.use(
         transports: ['websocket', 'xhr-polling', 'jsonp-polling'],
       }
     ),
-    store,
+    vuex: {
+      store,
+      mutationPrefix: "SOCKET_",
+      actionPrefix: "SOCKET_",
+    },
   })
 );
 new Vue({

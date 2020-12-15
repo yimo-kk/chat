@@ -11,11 +11,11 @@ axios.defaults.headers = {
 };
 // 添加请求拦截器
 axios.interceptors.request.use(
-  function(config) {
+  function (config) {
     // 在发送请求之前做些什么
     return config;
   },
-  function(error) {
+  function (error) {
     // 对请求错误做些什么
     return Promise.reject(error);
   }
@@ -23,17 +23,17 @@ axios.interceptors.request.use(
 
 // 添加响应拦截器
 axios.interceptors.response.use(
-  function(response) {
+  function (response) {
     // 对响应数据做点什么
     // if(!response.data.data){
     //   Toast('参数错误!')
     //   return Promise.reject(new Error('参数错误'
     //   ));
     // }else {
-      return response;
+    return response;
     // }
   },
-  function(error) {
+  function (error) {
     // 对响应错误做点什么
     return Promise.reject(error);
   }

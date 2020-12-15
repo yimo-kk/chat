@@ -19,7 +19,11 @@ export default new Vuex.Store({
     num: 0
   },
   mutations: {
-
+    SOCKET_chatTime (state, data) {
+      if (data.seller_code == state.code) {
+        state.userInfo.seller.chat_time = data.chat_time
+      }
+    },
     setMessageList (state, list) {
       state.messageList = [
         {

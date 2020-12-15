@@ -90,11 +90,12 @@ export default {
   vertical-align: middle;
   display: inline-block;
   color: #a2a2a2;
+  border-width: 1px;
 }
 
 .middle {
   width: 28px;
-  height: 25px;
+  height: 27px;
   border-style: solid;
   border-top-color: transparent;
   border-left-color: transparent;
@@ -107,6 +108,7 @@ export default {
   animation: show2 3s ease-in-out infinite;
   opacity: 1;
   color: #a2a2a2;
+  border-width: 1px;
 }
 @keyframes show2 {
   0% {
@@ -120,17 +122,15 @@ export default {
   }
 }
 .cricleplay {
-  width: 100%;
-  // margin-right: 15px;
+  width: 2.5rem;
 }
 
 .different {
   transform: rotate(180deg);
-  // margin: 0 0 0 15px;
 }
 .large {
   width: 39px;
-  height: 34px;
+  height: 38px;
   border-style: solid;
   border-top-color: transparent; //大专栏 纯css3配合vue实现微信语音播放效果;
   border-left-color: transparent;
@@ -143,6 +143,7 @@ export default {
   animation: show3 3s ease-in-out infinite;
   opacity: 1;
   color: #a2a2a2;
+  border-width: 1px;
 }
 @keyframes show3 {
   0% {

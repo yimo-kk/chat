@@ -21,6 +21,7 @@
         :isMore="isMore"
         :count="count"
         @getLog="getLog"
+        :chat_time="chatTime"
       ></ChatInfo>
       <!-- 聊天输入框 -->
       <div class="input_tab">
@@ -255,10 +256,12 @@ export default {
     //有客服接待通知
     prompt(data) {
       data.kefu_name = 'kefu'
+      data.state == 2
+      data.create_time = this.$dayjs().format('YYYY-MM-DD HH:mm:ss')
       this.messages.push(data)
-      this.$store.commit('setKefu_code', data.kefu_code)
       let obj = {}
-      if (getStorage(this.$route.query.code)) {
+      if (getStorage(this.$route.query.code) && data.kefu_code) {
+        this.$store.commit('setKefu_code', data.kefu_code)
         obj = JSON.parse(getStorage(this.$route.query.code))
         obj[this.username].kefu_code = data.kefu_code
         setStorage(this.$route.query.code, obj)
@@ -328,27 +331,6 @@ export default {
       this.sendText = ''
       this.faceShow = false
     },
-    // // 上传文件
-    // uploadeFile(file) {
-    //   this.sendType = 2;
-    //   this.loading = true
-    //   const formdata = new FormData();
-    //   formdata.append("filedata", file.file);
-    //   formdata.append("filename", file.file.name);
-    //   serviceSendChatFile(formdata)
-    //     .then(result => {
-    //       if(result.data.code == 0){
-    //         this.send(result.data.data);
-    //         this.loading = false
-    //       }else {
-    //         this.$toast(result.data.msg)
-    //           this.loading=false
-    //       }
-    //     })
-    //     .catch(err => {
-    //       this.loading=false
-    //     });
-    // },
     // 获取图片
     uploadeImg(file) {
       this.sendType = 1
@@ -476,12 +458,16 @@ export default {
         .then((result) => {
           if (result.data.code === 0) {
             result.data.data.length &&
-              this.messages.push({
-                isApi: true,
-                apiList: result.data.data,
-                from_name: this.$t('service'),
-                from_avatar: this.profilePhoto,
-              })
+              this.messages.push(
+                {
+                  isApi: true,
+                  apiList: result.data.data,
+                  from_name: this.$t('service'),
+                  from_avatar: this.profilePhoto,
+                  create_time: this.$dayjs().format('YYYY-MM-DD HH:mm:ss'),
+                },
+                { state: 2, message: this.$t('welcome') }
+              )
             if (sessionStorage.getItem('message')) {
               this.messages.push({
                 kefu_name: 'kefu',
@@ -583,7 +569,6 @@ export default {
           showCancelButton: false,
         })
       })
-
     this.startCanvas()
   },
 }

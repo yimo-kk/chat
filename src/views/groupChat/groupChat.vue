@@ -23,6 +23,7 @@
           :count="count"
           @getLog="getLog"
           :currentGroupimg="currentGroupimg"
+          :chat_time="chatTime"
         ></ChatInfo>
         <!-- 聊天输入框 -->
         <div class="input_tab">
@@ -437,6 +438,7 @@ export default {
               headimg: this.userInfo.data.headimg,
               nickname: this.userInfo.data.nickname,
             })
+
             this.is_invite = result.data.group.is_invite
             this.chatTitle = result.data.group_name
             let array = result.data.data.map((item) => {

@@ -7,8 +7,17 @@
   </div>
 </template>
 <script>
+import { mapState } from 'vuex'
 export default {
   methods: {},
+  data() {
+    return {
+      isClose: false,
+    }
+  },
+  computed: {
+    ...mapState(['username']),
+  },
   mounted() {
     let that = this
     document.addEventListener('click', () => {

@@ -1,4 +1,5 @@
 module.exports = {
+  welcome: '您好，IM客服为您服务',
   notPassword: '密码错误,请重新输入!',
   password: '请输入密码!',
   prompt: '提示',

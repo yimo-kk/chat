@@ -12,8 +12,7 @@ import {
   getStorage,
   getQueryString,
   segmentation,
-  createUserName,
-  setStorageData
+  createUserName
 } from "@/libs/utils.js";
 const appData = require("@/assets/emojis.json");
 import { mapState } from "vuex";
@@ -46,7 +45,8 @@ export default function () {
         userIp: {
           ip: '',
           address: ''
-        }
+        },
+        isClose: false
       };
     },
     watch: {
@@ -79,6 +79,13 @@ export default function () {
       ...mapState(["userInfo", "code", "gid", "username", 'kefu_code']),
       isIE () {
         return !isIE()
+      },
+      chatTime () {
+        if (Object.keys(this.userInfo).length) {
+          return this.userInfo.seller.chat_time
+        } else {
+          return 0
+        }
       }
     },
     methods: {
@@ -95,14 +102,14 @@ export default function () {
           .dispatch("getUsersData", params)
           .then((res) => {
             this.loading = false
-            this.userIp = {
-              ip: res.data.login_ip,
-              address: res.data.area
-            }
             if (res.code === 2 || res.code === 6) {
               res.state = true
               this.isGroupUser = res
               return
+            }
+            this.userIp = {
+              ip: res.data.login_ip,
+              address: res.data.area
             }
             callback()
           })
@@ -387,8 +394,12 @@ export default function () {
             nowObj[data.username] = valueObj
             setStorage(code, JSON.stringify(nowObj))
           } else {
-            let isExist = obj[data.username]['groupList'].some(item => {
-              return item.group_id == data.group_id
+            let isExist = false
+
+            obj[data.username]['groupList'] && obj[data.username]['groupList'].forEach(item => {
+              if (item.group_id == data.group_id) {
+                isExist = true
+              }
             })
             if (!isExist && data.group_id) {
               obj[data.username]['groupList'].push({ 'group_id': data.group_id || '', 'isPassword': false })
@@ -447,6 +458,42 @@ export default function () {
             resolve()
           }
         })
+      },
+      // 检查浏览器判断 刷新关闭
+      closed () {
+        // window.onbeforeunload = function () {
+        //   let time = new Date().getTime()
+        //   // 谷歌,edg先执行 火狐,ie后执行
+        //   localStorage.setItem('onbeforeunload', time)
+        // }
+        // window.onunload = function () {
+        //   // 火狐,ie先执行 谷歌,,edg后执行
+        //   let time = new Date().getTime()
+        //   localStorage.setItem('onunload', time)
+        // }
+        let userAgent = navigator.userAgent; //取得浏览器的userAgent字符串  
+        let isOpera = userAgent.indexOf("Opera") > -1; //判断是否Opera浏览器  
+        let isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1 && !isOpera; //判断是否IE浏览器
+        let isIE11 = userAgent.indexOf("rv:11.0") > -1; //判断是否是IE11浏览器
+        let isEdge = userAgent.indexOf("Edge") > -1 && !isIE; //判断是否IE的Edge浏览器
+        if (!isIE && !isEdge & !isIE11) {//兼容chrome和firefox iE暂时不管
+          var _beforeUnload_time = 0, _gap_time = 0;
+          var is_fireFox = navigator.userAgent.indexOf("Firefox") > -1;//是否是火狐浏览器
+          window.onunload = function () {
+            _gap_time = new Date().getTime() - _beforeUnload_time;
+            if (_gap_time <= 3) {
+              console.log('关闭111')
+            } else {//浏览器刷新
+              console.log('刷新')
+            }
+          }
+          window.onbeforeunload = function () {
+            _beforeUnload_time = new Date().getTime();
+            if (is_fireFox) {//火狐关闭执行
+              console.log('关闭333')
+            }
+          };
+        }
       }
     },
     mounted () {
@@ -464,6 +511,9 @@ export default function () {
         that.screenWidth = document.body.offsetWidth;
       });
       this.startCanvas();
+      // 测试刷新 关闭
+      this.closed()
     }
+
   };
 }

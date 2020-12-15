@@ -68,19 +68,24 @@
       />
     </div>
     <div :class="['chat_content']" ref="chatContent">
-      <div class="flex_center prompt" v-if="isPrompt">
-        <p>
-          {{
-            $store.state.userInfo.seller
-              ? $store.state.userInfo.seller.hello_word
-              : ''
-          }}
-        </p>
-      </div>
       <div v-for="(item, index) in messages" :key="index">
+        <div class="flex_center prompt" v-if="isPrompt && item.isWelcome">
+          <p>
+            {{ item.welcome }}
+          </p>
+        </div>
+
         <div v-if="item.state != 2">
           <div class="flex_center" style="color:#ccc; fontSize:12px">
-            <p>{{ isViewDate(index) ? item.create_time : '' }}</p>
+            <p>
+              {{
+                chat_time
+                  ? item.create_time
+                  : isViewDate(index)
+                  ? item.create_time
+                  : ''
+              }}
+            </p>
           </div>
           <div
             class="record"
@@ -92,29 +97,31 @@
                 item.state === 1 ? item.from_name : item.nickname
               }}</span>
               <div v-if="item.type === 0" class="flex">
-                <span
-                  style="white-space: pre-line;word-break: break-word;"
-                  class="content left"
-                  >{{ item.content || item.message }}</span
-                >
-                <div
-                  v-if="item.type == 0 && item.is_voice && !name"
-                  class="playIcon flex"
-                  status="stop"
-                  :title="$t('tts')"
-                  no="1"
-                >
-                  <Audio
-                    :time="false"
-                    @play="
-                      (isPlay) => {
-                        playRecord(item.voice_path, index, isPlay)
-                      }
-                    "
-                    :isPlay="item.play"
-                    :data="item"
-                  ></Audio>
+                <div class="left content">
+                  <!--  v-if="!item.voice_path" -->
+                  <span style="white-space: pre-line;word-break: break-word;">{{
+                    item.content || item.message
+                  }}</span>
+                  <div
+                    v-if="item.type == 0 && item.is_voice && !name"
+                    class="playIcon flex"
+                    status="stop"
+                    :title="$t('tts')"
+                    no="1"
+                  >
+                    <Audio
+                      :time="false"
+                      @play="
+                        (isPlay) => {
+                          playRecord(item.voice_path, index, isPlay)
+                        }
+                      "
+                      :isPlay="item.play"
+                      :data="item"
+                    ></Audio>
+                  </div>
                 </div>
+
                 <!-- 文字转语音图标 -->
                 <!-- <div
                 v-if="isTts"
@@ -231,7 +238,11 @@
                     class="api_list_item"
                     @click="getApicontent(val.api_id)"
                   >
-                    <a class="dwote">{{ val.api_title }}</a>
+                    <a
+                      class="dwote"
+                      :title="val.api_title"
+                      v-html="val.api_title"
+                    ></a>
                     <van-icon
                       class="iconfont"
                       size="12px"
@@ -432,6 +443,10 @@ export default {
       type: Number,
       default: 20,
     },
+    chat_time: {
+      type: Number,
+      default: 0,
+    },
   },
   components: {
     Audio,
@@ -443,25 +458,30 @@ export default {
       newList: [],
       localeval: 'zh-CN',
       ttsIndex: null,
-      // iatRecorder,
     }
   },
   computed: {
     ...mapState(['userInfo', 'username', 'code']),
-    isViewDate() {
+    isViewDate(index) {
       return (index) => {
         if (this.messages[index] && this.messages[index - 1]) {
-          return (
-            new Date(this.messages[index].create_time).getTime() -
-              new Date(this.messages[index - 1].create_time).getTime() >
-            1000 * 60 * 5
-          )
+          if (
+            this.messages[index].create_time &&
+            this.messages[index - 1].create_time
+          ) {
+            return (
+              new Date(this.messages[index].create_time).getTime() -
+                new Date(this.messages[index - 1].create_time).getTime() >
+              1000 * 60 * 3
+            )
+          }
         } else {
-          return ''
+          return false
         }
       }
     },
   },
+
   watch: {
     'messages.length': {
       handler(newVal, oldVal) {
@@ -480,13 +500,6 @@ export default {
       },
       deep: true,
     },
-    // 'iatRecorder.status': {
-    //   handler(newVal) {
-    //     ;(newVal === 'endPlay' || newVal === 'errorTTS') &&
-    //       (this.ttsIndex = null)
-    //   },
-    //   deep: true,
-    // },
   },
   methods: {
     // 来的消息显示在最下面
@@ -551,7 +564,6 @@ export default {
           aLink.click()
         }
       } catch (error) {
-        console.log(error)
         this.$toast(this.$t('fileErr'))
       }
     },
@@ -645,7 +657,9 @@ export default {
 </script>
 <style lang="less" scoped>
 .playIcon {
-  padding: 0px 8px 0 0px;
+  display: flex;
+  // width: 3rem;
+  // padding: 0px 8px 0 0px;
   border-radius: 3px;
 }
 .small {
@@ -660,7 +674,7 @@ export default {
   vertical-align: middle;
   display: inline-block;
   color: #a2a2a2;
-  border-width: 0.5px;
+  border-width: 0.1325rem;
 }
 
 .middle {
@@ -678,7 +692,7 @@ export default {
   animation: show2 3s ease-in-out infinite;
   opacity: 1;
   color: #a2a2a2;
-  border-width: 0.5px;
+  border-width: 0.1325rem;
 }
 @keyframes show2 {
   0% {
@@ -710,7 +724,7 @@ export default {
   animation: show3 3s ease-in-out infinite;
   opacity: 1;
   color: #a2a2a2;
-  border-width: 0.5px;
+  border-width: 0.1325rem;
 }
 @keyframes show3 {
   0% {
