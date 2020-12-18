@@ -16,7 +16,8 @@ export default new Vuex.Store({
     timeOut: null,
     kefu_code: '',
     tit: '你有新的消息',
-    num: 0
+    num: 0,
+    level: 0
   },
   mutations: {
     SOCKET_chatTime (state, data) {
@@ -78,6 +79,9 @@ export default new Vuex.Store({
     },
     setNum (state, num) {
       state.num = num
+    },
+    setLevel (state, value) {
+      state.level = value
     }
   },
   actions: {

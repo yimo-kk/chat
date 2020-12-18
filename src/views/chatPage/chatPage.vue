@@ -249,7 +249,7 @@ export default {
         customer_name: this.username,
         seller_code: this.userInfo.seller.seller_code,
         customer_avatar: this.userInfo.data.headimg,
-        is_tourist: this.userInfo.data.is_tourist,
+        level: this.$store.state.level,
         customer_area: this.userIp.address,
       })
     },
@@ -420,7 +420,7 @@ export default {
         customer_name: this.username,
         seller_code: this.userInfo.seller.seller_code,
         customer_avatar: this.userInfo.data.headimg,
-        is_tourist: this.userInfo.data.is_tourist,
+        level: this.$store.state.level,
         customer_area: this.userIp.address,
       })
     },
@@ -563,6 +563,7 @@ export default {
         })
       })
       .catch((err) => {
+        console.log(err)
         this.$dialog.alert({
           message: '商家不存在或参数错误！',
           showConfirmButton: false,

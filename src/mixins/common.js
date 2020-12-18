@@ -15,7 +15,7 @@ import {
   createUserName
 } from "@/libs/utils.js";
 const appData = require("@/assets/emojis.json");
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 import Recorder from "js-audio-recorder";
 let recorderData
 if (!isIE()) {
@@ -77,6 +77,7 @@ export default function () {
     },
     computed: {
       ...mapState(["userInfo", "code", "gid", "username", 'kefu_code']),
+
       isIE () {
         return !isIE()
       },
@@ -89,13 +90,16 @@ export default function () {
       }
     },
     methods: {
+      ...mapMutations(['setLevel']),
       getUserInfo (callback) {
         let params = {
           username: this.username,
-          is_tourist: this.$route.query.username ? 2 : 0
+          // is_tourist: this.$route.query.username ? 2 : 0
         }
-        if (this.$store.state.code) {
-          params.code = this.$store.state.code
+        if (this.code) {
+          params.code = this.code
+          // 获取等级level 
+          JSON.parse(getStorage(this.code))[this.username] && (params.level = JSON.parse(getStorage(this.code))[this.username].level)
         }
         this.loading = true
         this.$store
@@ -114,6 +118,7 @@ export default function () {
             callback()
           })
           .catch(err => {
+            console.log(err)
             this.loading = false
             this.$toast(err.msg);
           });
@@ -384,36 +389,36 @@ export default function () {
             this.loading = false
           });
       },
-      handleBusinessUser (code, data) {
+      handleBusinessUser (code, { username, group_id = '', level = 0 }) {
+        this.setLevel(level)
         let obj = {}
-        let valueObj = { 'kefu_code': '', 'groupList': [{ 'group_id': data.group_id || '', 'isPassword': false }] }
+        let valueObj = { 'kefu_code': '', 'level': level, 'groupList': [{ 'group_id': group_id, 'isPassword': false }] }
         if (getStorage(code)) {
           obj = JSON.parse(getStorage(code))
           let nowObj = {}
-          if (Object.keys(obj)[0] !== data.username) {
-            nowObj[data.username] = valueObj
+          if (Object.keys(obj)[0] !== username) {
+            nowObj[username] = valueObj
             setStorage(code, JSON.stringify(nowObj))
           } else {
             let isExist = false
-
-            obj[data.username]['groupList'] && obj[data.username]['groupList'].forEach(item => {
-              if (item.group_id == data.group_id) {
+            obj[username]['groupList'] && obj[username]['groupList'].forEach(item => {
+              if (item.group_id == group_id) {
                 isExist = true
               }
             })
-            if (!isExist && data.group_id) {
-              obj[data.username]['groupList'].push({ 'group_id': data.group_id || '', 'isPassword': false })
+            if (!isExist && group_id) {
+              obj[username]['groupList'].push({ 'group_id': group_id || '', 'isPassword': false })
             }
             setStorage(code, JSON.stringify(obj))
           }
         } else {
-          obj[data.username] = valueObj
+          obj[username] = valueObj
           setStorage(code, obj);
         }
-        this.$store.commit("setUsername", data.username);
+        this.$store.commit("setUsername", username);
         this.$store.commit("setCode", code);
-        data.group_id &&
-          this.$store.commit("setGroupId", data.group_id);
+        group_id &&
+          this.$store.commit("setGroupId", group_id);
       },
       // 商家:{用户名:{客服名:客服,群id:id,isPassword:false,password:null}}
       // 判断是否有商家code等参数
@@ -426,6 +431,7 @@ export default function () {
             await userDecode({ u, code })
               .then((result) => {
                 this.loading = false
+
                 if (!result.data.data) {
                   this.$dialog.alert({
                     message: '商家不存在或参数错误！',
@@ -443,7 +449,6 @@ export default function () {
                 }
                 this.handleBusinessUser(code, data)
                 resolve()
-
               })
               .catch(err => {
                 reject(err);
@@ -471,6 +476,7 @@ export default function () {
         //   let time = new Date().getTime()
         //   localStorage.setItem('onunload', time)
         // }
+        let that = this
         let userAgent = navigator.userAgent; //取得浏览器的userAgent字符串  
         let isOpera = userAgent.indexOf("Opera") > -1; //判断是否Opera浏览器  
         let isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1 && !isOpera; //判断是否IE浏览器
@@ -483,6 +489,10 @@ export default function () {
             _gap_time = new Date().getTime() - _beforeUnload_time;
             if (_gap_time <= 3) {
               console.log('关闭111')
+              that.$socket.emit('message', {
+                cmd: 'userClose',
+                message: '23333333333'
+              })
             } else {//浏览器刷新
               console.log('刷新')
             }
@@ -512,7 +522,7 @@ export default function () {
       });
       this.startCanvas();
       // 测试刷新 关闭
-      this.closed()
+      // this.closed()
     }
 
   };
