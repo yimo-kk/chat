@@ -103,6 +103,7 @@ export default new Vuex.Store({
       return new Promise(async (resolve, reject) => {
         await getUsersData(data)
           .then(result => {
+
             let userData = JSON.parse(JSON.stringify(result.data))
             result.data.code === 0 && (userData.data = rule(userData.data))
             commit("setUserInfo", userData);

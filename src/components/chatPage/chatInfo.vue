@@ -23,7 +23,12 @@
       没有更多了...
     </p>
 
-    <div class="who_chat">
+    <div
+      :class="[
+        'who_chat',
+        name ? 'chat_box_width_group' : 'chat_box_width_server',
+      ]"
+    >
       <div class="chat_title">
         <div class="language">
           <span
@@ -93,8 +98,9 @@
           >
             <img class="head_portrait" :src="item.from_avatar" alt />
             <div style="margin: 0 10px;" class="chat_content_text_left">
-              <span v-if="name" style="font-size: 12px;color:#ccc">{{
-                item.state === 1 ? item.from_name : item.nickname
+              <!-- v-if="name" -->
+              <span style="font-size: 12px;color:#ccc">{{
+                item.state === 1 || !name ? item.from_name : item.nickname
               }}</span>
               <div v-if="item.type === 0" class="flex">
                 <div class="left content">
@@ -260,8 +266,8 @@
             v-else-if="item.from_name == username && !item.kefu_name"
           >
             <div style="margin: 0 10px;" class="chat_content_text_right">
-              <p v-if="name" style="text-align: end;font-size: 12px;color:#ccc">
-                {{ item.nickname }}
+              <p style="text-align: end;font-size: 12px;color:#ccc">
+                {{ item.nickname || item.from_name }}
               </p>
               <span
                 style="white-space: pre-line;word-break: break-word;"
@@ -335,7 +341,10 @@
           class="flex_center"
           style="marginBottom:10px"
         >
-          <p style="color:#ccc;fontSize:0.8rem">
+          <p
+            style="color:#ccc;fontSize:0.8rem;padding: 0 5rem;
+    text-align: center;"
+          >
             {{ item.message || item.content }}
           </p>
         </div>

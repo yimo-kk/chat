@@ -7,11 +7,22 @@
     min-width: 500px;
     min-height: 420px;
 
+    .chat_box_width_group {
+      width: calc(75% - 1px);
+
+    }
+
+    .chat_box_width_server {
+      width: 100%;
+    }
+
+
     .who_chat {
       position: fixed;
       top: 0;
       left: 0;
-      min-width: calc(75% - 1px);
+      // min-width: calc(75% - 1px);
+      // width: 100%;
       z-index: 222;
 
       .chat_title {
@@ -221,11 +232,19 @@
       // background-color: #f5f5f5;
       background-color: rgb(245, 245, 245);
 
+      .chat_box_width_server {
+        width: 100%;
+      }
+
+      .chat_box_width_group {
+        min-width: 100%
+      }
+
       .who_chat {
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
+        // width: 100%;
         z-index: 4;
 
 

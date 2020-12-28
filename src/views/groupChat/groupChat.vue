@@ -426,6 +426,7 @@ export default {
         .then((result) => {
           this.loading = false
           this.count = result.data.count
+
           if (result.data.code == 1 || result.data.code == -1) {
             this.isGroupUser.state = true
             this.isGroupUser.message = result.data.msg

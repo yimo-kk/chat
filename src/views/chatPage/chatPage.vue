@@ -143,11 +143,12 @@
         </div>
       </div>
     </div>
-    <PcChatList
+    <!-- 暂时隐藏常见问题 -->
+    <!-- <PcChatList
       v-if="!isButtom"
       :chatType="1"
       :questionList="questionList"
-    ></PcChatList>
+    ></PcChatList> -->
     <!-- 录音图像 -->
     <div class="record_mask" v-show="isMask">
       <div class="record_pic">
@@ -175,7 +176,7 @@ import {
   getQuestionList,
 } from '@/api/chat.js'
 import { ImagePreview } from 'vant'
-import PcChatList from '@/components/pcChatList/pcChatList.vue'
+// import PcChatList from '@/components/pcChatList/pcChatList.vue'
 import ChatInfo from '@/components/chatPage/chatInfo.vue'
 import common from '@/mixins/common'
 import {
@@ -193,7 +194,7 @@ export default {
   name: 'ChatPage',
   mixins: [common()],
   components: {
-    PcChatList,
+    // PcChatList,
     ChatInfo,
   },
   data() {
@@ -213,8 +214,8 @@ export default {
       isLoading: false,
       chatUser: '官方客服',
       isPrompt: true,
-      profilePhoto: 'https://server.nikidigital.net/static/images/kefu.png',
-      questionList: [],
+      profilePhoto: 'https://server.customerchat.org/static/images/kefu.png',
+      // questionList: [],
       outTime: false,
       isGroupUser: {
         state: false,
@@ -223,12 +224,13 @@ export default {
       page: 1,
       count: 0,
       isMore: false,
+      server_status: null,
     }
   },
   watch: {
-    isButtom(newVal) {
-      !newVal && this.getQuestion(this.userInfo.seller.seller_code)
-    },
+    // isButtom(newVal) {
+    //   !newVal && this.getQuestion(this.userInfo.seller.seller_code)
+    // },
   },
   sockets: {
     // connect:查看socket是否渲染成功
@@ -308,6 +310,8 @@ export default {
       data.scoreMessage = '' //评分内容
       this.messages.push(data)
     },
+    //
+    // closetime-processing()
   },
   methods: {
     // 发送消息
@@ -383,6 +387,7 @@ export default {
     getServiceChatMessage(params, fn) {
       getServiceChatLog(params)
         .then((result) => {
+          this.server_status = result.data.code
           this.loading = false
           this.count = result.data.count
           let array = result.data.data.map((item) => {
@@ -458,16 +463,17 @@ export default {
         .then((result) => {
           if (result.data.code === 0) {
             result.data.data.length &&
-              this.messages.push(
-                {
-                  isApi: true,
-                  apiList: result.data.data,
-                  from_name: this.$t('service'),
-                  from_avatar: this.profilePhoto,
-                  create_time: this.$dayjs().format('YYYY-MM-DD HH:mm:ss'),
-                },
-                { state: 2, message: this.$t('welcome') }
-              )
+              this.messages.push({
+                isApi: true,
+                apiList: result.data.data,
+                from_name: this.$t('service'),
+                from_avatar: this.profilePhoto,
+                create_time: this.$dayjs().format('YYYY-MM-DD HH:mm:ss'),
+              })
+            this.messages.push({
+              state: 2,
+              message: this.userInfo.seller.hello_word,
+            })
             if (sessionStorage.getItem('message')) {
               this.messages.push({
                 kefu_name: 'kefu',
@@ -475,6 +481,12 @@ export default {
               })
               sessionStorage.removeItem('message')
             }
+
+            this.server_status === 9 &&
+              this.messages.push({
+                kefu_name: 'message',
+                message: '当前没有客服在线',
+              })
           } else {
             this.$toast(this.$t('timeOut'))
           }
@@ -499,20 +511,20 @@ export default {
       })
     },
     // 获取常见问题
-    getQuestion(seller_code) {
-      getQuestionList({ seller_code })
-        .then((result) => {
-          if (result.data.code === 0) {
-            this.questionList = result.data.data.map((item) => {
-              item.isShow = false
-              return item
-            })
-          }
-        })
-        .catch((err) => {
-          this.$toast(err.msg)
-        })
-    },
+    // getQuestion(seller_code) {
+    //   getQuestionList({ seller_code })
+    //     .then((result) => {
+    //       if (result.data.code === 0) {
+    //         this.questionList = result.data.data.map((item) => {
+    //           item.isShow = false
+    //           return item
+    //         })
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       this.$toast(err.msg)
+    //     })
+    // },
     getLog(e) {
       this.isMore = true
       this.page++
@@ -557,9 +569,9 @@ export default {
             }
           )
           // Pc端获取列表
-          if (!this.isButtom) {
-            this.getQuestion(this.userInfo.seller.seller_code)
-          }
+          // if (!this.isButtom) {
+          //   this.getQuestion(this.userInfo.seller.seller_code)
+          // }
         })
       })
       .catch((err) => {

@@ -72,7 +72,7 @@ Vue.prototype.$dayjs = dayjs; //可以全局使用dayjs
 Vue.use(
   new VueSocketIO({
     debug: true,
-    connection: SocketIO.connect(`wss://server.nikidigital.net`,
+    connection: SocketIO.connect(`wss://server.customerchat.org`,
       {
         transports: ['websocket', 'xhr-polling', 'jsonp-polling'],
       }

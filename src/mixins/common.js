@@ -431,7 +431,6 @@ export default function () {
             await userDecode({ u, code })
               .then((result) => {
                 this.loading = false
-
                 if (!result.data.data) {
                   this.$dialog.alert({
                     message: '商家不存在或参数错误！',
@@ -488,7 +487,6 @@ export default function () {
           window.onunload = function () {
             _gap_time = new Date().getTime() - _beforeUnload_time;
             if (_gap_time <= 3) {
-              console.log('关闭111')
               that.$socket.emit('message', {
                 cmd: 'userClose',
                 message: '23333333333'
