@@ -1,4 +1,7 @@
 module.exports = {
+  merchantError: '商家不存在或参数错误！',
+  notOnline: '当前没有客服在线',
+  thankMessage: '感谢你的留言，请等待客服联系你',
   welcome: '您好，IM客服为您服务',
   notPassword: '密码错误,请重新输入!',
   password: '请输入密码!',

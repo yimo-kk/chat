@@ -1,4 +1,21 @@
-const appData = require("@/assets/emojis.json");
+// const appData = require("@/assets/emojis.json");
+import { wChatToUi } from '@/assets/emjoy/emjoydata'
+
+let appData = []
+// for (let key in emojisAmap) {
+//   let obj = {}
+//   obj[key] = emojisAmap[key]
+//   obj.name = `[${key}]`
+//   obj.oldName = key
+//   appData.push(obj)
+// }
+for (let key in wChatToUi) {
+  let obj = {}
+  obj[wChatToUi[key]] = key
+  obj.name = wChatToUi[key]
+  obj.oldName = key
+  appData.push(obj)
+}
 // 压缩图片
 export function compressImage (file, success, error) {
   const name = file.name; //文件名
@@ -85,30 +102,41 @@ export function removeStorage (name) {
   localStorage.removeItem(name);
 }
 // 表情转化
-export function conversion (input) {
-  if (!input) return
-  const regexTab = [];
-  for (let key of Object.keys(appData)) {
-    regexTab.push({
-      regex: new RegExp(appData[key]["char"], "g"),
-      placeholder: "[em_" + key + "]"
-    });
-  }
-  for (let x of regexTab) {
-    input = input.replace(x.regex, x.placeholder);
-  }
-  return input;
-}
 export function conversionFace (input) {
   if (!input) return
-  for (let key of Object.keys(appData)) {
-    input = input.replace(
-      new RegExp(`\\[em_${key}\\]`, "g"),
-      appData[key]["char"]
-    );
-  }
+  appData.forEach(key => {
+    let re = {
+      regex: new RegExp(`\\[${key.oldName}\\]`, "g"),
+      placeholder: key.name
+    }
+    input = input.replace(re.regex, re.placeholder);
+  })
   return input;
 }
+// export function conversion (input) {
+//   if (!input) return
+//   const regexTab = [];
+//   for (let key of Object.keys(appData)) {
+//     regexTab.push({
+//       regex: new RegExp(appData[key]["char"], "g"),
+//       placeholder: "[em_" + key + "]"
+//     });
+//   }
+//   for (let x of regexTab) {
+//     input = input.replace(x.regex, x.placeholder);
+//   }
+//   return input;
+// }
+// export function conversionFace (input) {
+//   if (!input) return
+//   for (let key of Object.keys(appData)) {
+//     input = input.replace(
+//       new RegExp(`\\[em_${key}\\]`, "g"),
+//       appData[key]["char"]
+//     );
+//   }
+//   return input;
+// }
 // 生成随机字符串
 function GetRandomNum (Min, Max) {
   var Range = Max - Min;
@@ -182,11 +210,11 @@ export function setStorageData (code, username, group_id, val) {
   let obj = {}
   if (Object.keys(getStorage(code)).length) {
     obj = JSON.parse(getStorage(code))
-    if (Array.isArray(obj[username]['groupList'])) {
-      obj[username]['groupList'].map(item => {
-        item.group_id === group_id && (item.isPassword = val)
-      })
-    }
+    // if (Array.isArray(obj[username]['groupList'])) {
+    //   obj[username]['groupList'].map(item => {
+    //     item.group_id === group_id && (item.isPassword = val)
+    //   })
+    // }
     setStorage(code, obj)
   }
 }

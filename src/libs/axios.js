@@ -1,9 +1,6 @@
 import axios from "axios";
-import {
-  Toast
-} from 'vant';
-// const baseUrl = process.env.VUE_APP_BASE_URL + "/api";
 const baseUrl = process.env.VUE_APP_BASE_URL;
+
 axios.defaults.baseURL = baseUrl;
 axios.defaults.timeout = 50000;
 axios.defaults.headers = {

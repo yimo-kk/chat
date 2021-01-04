@@ -34,8 +34,13 @@
               slot="right-icon"
               name="buoumaotubiao49"
               @click.stop="faceContent"
+              style="padding:5px"
             ></van-icon>
-            <van-uploader :after-read="uploadeFile" accept="*">
+            <van-uploader
+              :after-read="uploadeFile"
+              accept="*"
+              style="padding:5px"
+            >
               <van-icon
                 class="iconfont font_size"
                 size="1.8rem"
@@ -44,6 +49,7 @@
               ></van-icon>
             </van-uploader>
             <van-uploader
+              style="padding:5px"
               :after-read="uploadeImg"
               accept="image/png, image/gif, image/jpg, image/webp, image/jpeg"
             >
@@ -54,15 +60,17 @@
                 name="tupian"
               ></van-icon>
             </van-uploader>
-            <van-icon
-              v-if="isAudio & isIE"
+
+            <!-- <van-icon
+              v-if="isAudio && isIE"
               @click="recordService"
               name="comment-o"
               style="padding:0 1px"
               size="1.8rem"
-            />
+            /> -->
             <van-icon
-              v-else-if="isIE"
+              style="padding:5px"
+              v-if="isIE"
               class="iconfont font_size"
               size="1.8rem"
               class-prefix="icon"
@@ -133,22 +141,28 @@
         <div class="browBox" v-if="faceShow">
           <ul>
             <li
+              v-html="parsingEmoji(item.name)"
+              v-for="(item, index) in faceList"
+              :key="index"
+              @click.stop="getBrow(index)"
+            ></li>
+            <!-- <li
               v-for="(item, index) in faceList"
               :key="index"
               @click.stop="getBrow(index)"
             >
               {{ item.char }}
-            </li>
+            </li> -->
           </ul>
         </div>
       </div>
     </div>
     <!-- 暂时隐藏常见问题 -->
-    <!-- <PcChatList
-      v-if="!isButtom"
+    <PcChatList
+      v-if="!isButtom && isQuestion"
       :chatType="1"
       :questionList="questionList"
-    ></PcChatList> -->
+    ></PcChatList>
     <!-- 录音图像 -->
     <div class="record_mask" v-show="isMask">
       <div class="record_pic">
@@ -176,7 +190,7 @@ import {
   getQuestionList,
 } from '@/api/chat.js'
 import { ImagePreview } from 'vant'
-// import PcChatList from '@/components/pcChatList/pcChatList.vue'
+import PcChatList from '@/components/pcChatList/pcChatList.vue'
 import ChatInfo from '@/components/chatPage/chatInfo.vue'
 import common from '@/mixins/common'
 import {
@@ -185,7 +199,6 @@ import {
   base64ToBlob,
   setStorage,
   getStorage,
-  conversion,
   conversionFace,
   createUserName,
   isIE,
@@ -194,7 +207,7 @@ export default {
   name: 'ChatPage',
   mixins: [common()],
   components: {
-    // PcChatList,
+    PcChatList,
     ChatInfo,
   },
   data() {
@@ -214,8 +227,8 @@ export default {
       isLoading: false,
       chatUser: '官方客服',
       isPrompt: true,
-      profilePhoto: 'https://server.customerchat.org/static/images/kefu.png',
-      // questionList: [],
+      profilePhoto: process.env.VUE_APP_BASE_URL + '/static/images/kefu.png',
+      questionList: [],
       outTime: false,
       isGroupUser: {
         state: false,
@@ -227,11 +240,7 @@ export default {
       server_status: null,
     }
   },
-  watch: {
-    // isButtom(newVal) {
-    //   !newVal && this.getQuestion(this.userInfo.seller.seller_code)
-    // },
-  },
+  watch: {},
   sockets: {
     // connect:查看socket是否渲染成功
     connect() {
@@ -309,9 +318,12 @@ export default {
       data.scoreNum = 0 //评分
       data.scoreMessage = '' //评分内容
       this.messages.push(data)
+      this.userInfo.seller.end_status &&
+        this.messages.push({
+          state: 2,
+          message: this.userInfo.seller.end_word,
+        })
     },
-    //
-    // closetime-processing()
   },
   methods: {
     // 发送消息
@@ -330,7 +342,7 @@ export default {
         from_ip: this.userIp.ip,
       }
       let sendMessage = JSON.parse(JSON.stringify(my_send))
-      this.sendType === 0 && (sendMessage.message = conversion(my_send.message))
+      // this.sendType === 0 && (sendMessage.message = conversion(my_send.message))
       this.$socket.emit('message', sendMessage)
       this.sendText = ''
       this.faceShow = false
@@ -413,6 +425,7 @@ export default {
           }
         })
         .catch((err) => {
+          console.log(err)
           this.loading = false
           this.$toast(err.msg)
         })
@@ -470,14 +483,15 @@ export default {
                 from_avatar: this.profilePhoto,
                 create_time: this.$dayjs().format('YYYY-MM-DD HH:mm:ss'),
               })
-            this.messages.push({
-              state: 2,
-              message: this.userInfo.seller.hello_word,
-            })
+            this.userInfo.seller.hello_status &&
+              this.messages.push({
+                state: 2,
+                message: this.userInfo.seller.hello_word,
+              })
             if (sessionStorage.getItem('message')) {
               this.messages.push({
                 kefu_name: 'kefu',
-                message: '感谢你的留言，请等待客服联系你',
+                message: this.$t('thankMessage'),
               })
               sessionStorage.removeItem('message')
             }
@@ -485,7 +499,7 @@ export default {
             this.server_status === 9 &&
               this.messages.push({
                 kefu_name: 'message',
-                message: '当前没有客服在线',
+                message: this.$t('notOnline'),
               })
           } else {
             this.$toast(this.$t('timeOut'))
@@ -511,20 +525,20 @@ export default {
       })
     },
     // 获取常见问题
-    // getQuestion(seller_code) {
-    //   getQuestionList({ seller_code })
-    //     .then((result) => {
-    //       if (result.data.code === 0) {
-    //         this.questionList = result.data.data.map((item) => {
-    //           item.isShow = false
-    //           return item
-    //         })
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       this.$toast(err.msg)
-    //     })
-    // },
+    getQuestion(seller_code) {
+      getQuestionList({ seller_code })
+        .then((result) => {
+          if (result.data.code === 0) {
+            this.questionList = result.data.data.map((item) => {
+              item.isShow = false
+              return item
+            })
+          }
+        })
+        .catch((err) => {
+          this.$toast(err.msg)
+        })
+    },
     getLog(e) {
       this.isMore = true
       this.page++
@@ -569,15 +583,14 @@ export default {
             }
           )
           // Pc端获取列表
-          // if (!this.isButtom) {
-          //   this.getQuestion(this.userInfo.seller.seller_code)
-          // }
+          if (!this.isButtom && this.isQuestion) {
+            this.getQuestion(this.userInfo.seller.seller_code)
+          }
         })
       })
       .catch((err) => {
-        console.log(err)
         this.$dialog.alert({
-          message: '商家不存在或参数错误！',
+          message: this.$t('merchantError'),
           showConfirmButton: false,
           showCancelButton: false,
         })

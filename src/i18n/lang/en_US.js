@@ -1,4 +1,7 @@
 module.exports = {
+  merchantError: 'The business does not exist or the parameters are wrong!',
+  notOnline: 'There is currently no customer service online',
+  thankMessage: 'Thank you for your message, please wait for the customer service to contact you',
   welcome: 'Hello, IM customer service is for you',
   notPassword: 'Wrong password, please re-enter!',
   password: 'Please enter password!',

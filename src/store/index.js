@@ -15,9 +15,12 @@ export default new Vuex.Store({
     gid: null,
     timeOut: null,
     kefu_code: '',
-    tit: '你有新的消息',
+    tit: '',
+    labelTitle: '',
     num: 0,
-    level: 0
+    level: 0,
+    isQuestion: null, // 是否显示常见问题
+    carryPassword: false, // 是否携带正确密码
   },
   mutations: {
     SOCKET_chatTime (state, data) {
@@ -77,12 +80,22 @@ export default new Vuex.Store({
     setTitle (state, num) {
       state.tit = `你有${num}条新消息`
     },
+    setLabelTitle (state, title) {
+      state.labelTitle = title
+      document.title = title
+    },
     setNum (state, num) {
       state.num = num
     },
     setLevel (state, value) {
       state.level = value
-    }
+    },
+    setIsQuestion (state, value) {
+      state.isQuestion = value
+    },
+    setCarryPassword (state, value) {
+      state.carryPassword = value
+    },
   },
   actions: {
     // 获取 聊天列表
@@ -103,10 +116,16 @@ export default new Vuex.Store({
       return new Promise(async (resolve, reject) => {
         await getUsersData(data)
           .then(result => {
+            if (result.data.code === 0) {
+              let userData = JSON.parse(JSON.stringify(result.data))
+              result.data.code === 0 && (userData.data = rule(userData.data))
+              commit("setUserInfo", userData);
+              commit('setLabelTitle', result.data.seller.service_title || '')
+            } else if (result.data.code === 6) {
+              reject(result);
+              return
+            }
 
-            let userData = JSON.parse(JSON.stringify(result.data))
-            result.data.code === 0 && (userData.data = rule(userData.data))
-            commit("setUserInfo", userData);
             resolve(result.data);
           })
           .catch(err => {

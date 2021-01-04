@@ -207,3 +207,14 @@ export function checkGroupPwd (params) {
     data: qs.stringify(params)
   })
 }
+/**
+ * 提交进入未知群成员信息
+ * @params {*}params
+ */
+export function createGroupUser (params) {
+  return Axios({
+    url: '/chat/createGroupUser',
+    method: 'post',
+    data: qs.stringify(params)
+  })
+}

@@ -30,6 +30,7 @@
           <div class="input_box">
             <div class="handle_other">
               <van-icon
+                style="padding:5px"
                 class="iconfont faceShow font_size"
                 size="1.6rem"
                 class-prefix="icon"
@@ -37,7 +38,12 @@
                 name="buoumaotubiao49"
                 @click.stop="faceContent"
               ></van-icon>
-              <van-uploader :after-read="uploadeFile" accept="*" v-if="on_file">
+              <van-uploader
+                :after-read="uploadeFile"
+                accept="*"
+                v-if="on_file"
+                style="padding:5px"
+              >
                 <van-icon
                   class="iconfont font_size"
                   size="1.8rem"
@@ -46,6 +52,7 @@
                 ></van-icon>
               </van-uploader>
               <van-uploader
+                style="padding:5px"
                 :after-read="uploadeImg"
                 accept="image/png, image/gif, image/jpg, image/webp, image/jpeg"
               >
@@ -61,10 +68,11 @@
                 v-if="isAudio & isIE && on_voice"
                 @click="recordService"
                 name="comment-o"
-                style="padding:0 1px"
+                style="padding:5px"
                 size="1.8rem"
               />
               <van-icon
+                style="padding:5px"
                 v-else-if="isIE && on_voice"
                 class="iconfont font_size"
                 size="1.8rem"
@@ -133,12 +141,18 @@
           <div class="browBox" v-if="faceShow">
             <ul>
               <li
+                v-html="parsingEmoji(item.name)"
+                v-for="(item, index) in faceList"
+                :key="index"
+                @click.stop="getBrow(index)"
+              ></li>
+              <!-- <li
                 v-for="(item, index) in faceList"
                 :key="index"
                 @click.stop="getBrow(index)"
               >
                 {{ item.char }}
-              </li>
+              </li> -->
             </ul>
           </div>
         </div>
@@ -182,6 +196,7 @@ import {
   uploadVoice,
   checkGroupPwd,
   getGroupData,
+  createGroupUser,
 } from '@/api/chat.js'
 
 import {
@@ -247,18 +262,7 @@ export default {
       this.$socket.close()
     },
     // disconnect:检测socket断开连接
-    disconnect(data) {
-      // let that = this
-      // console.log('断开')
-      // this.$dialog.confirm({
-      //     title: '提示',
-      //     message: '网络异常断开连接，请刷新！',
-      //   })
-      // .then(() => {
-      //   this.$router.go(0)
-      //   // on confirm
-      // })
-    },
+    disconnect(data) {},
     reconnect(data) {
       console.log('重连')
       this.$socket.emit('group', {
@@ -281,6 +285,7 @@ export default {
       data.type === 3 && (data.message.play = false)
       data.type === 0 &&
         (data.message = conversionFace(data.content || data.message))
+      data.create_time = data.createtime
       this.messages.push(data)
     },
     // 拉黑全局
@@ -394,7 +399,7 @@ export default {
         from_ip: this.userIp.ip,
       }
       let sendMessage = JSON.parse(JSON.stringify(my_send))
-      this.sendType === 0 && (sendMessage.message = conversion(my_send.message))
+      // this.sendType === 0 && (sendMessage.message = conversion(my_send.message))
       this.$socket.emit('message', sendMessage)
       this.sendText = ''
       this.faceShow = false
@@ -624,30 +629,37 @@ export default {
         username: this.username,
       })
         .then(async (result) => {
-          this.loading = false
-          this.on_file = result.data.group.on_file
-          this.on_voice = result.data.group.on_voice
-          this.currentUid = result.data.users.uid
-          this.currentUsername = result.data.users.username
-          this.currentHeadimg = result.data.users.headimg
-          this.currentGroupimg = result.data.group.group_avatar
-          let oldPassword
-          JSON.parse(getStorage(this.code))[result.data.users.username][
-            'groupList'
-          ].forEach((item) => {
-            item.group_id === this.gid && (oldPassword = item.isPassword)
-          })
-          if (!oldPassword && result.data.group.is_invite) {
-            oldPassword ? '' : (this.isShowPopup = true)
-          } else {
-            this.loading = true
-            await this.getNewsData(this.userInfo.seller.seller_code)
-            await this.getGroupList(this.gid)
-            await this.getGroupChatLog({
-              page: 1,
-              group_id: this.gid,
-              seller_code: this.userInfo.seller.seller_code,
-              uid: this.userInfo.data.uid,
+          if (result.data.code === 0) {
+            this.loading = false
+            this.on_file = result.data.group.on_file
+            this.on_voice = result.data.group.on_voice
+            this.currentUid = result.data.users.uid
+            this.currentUsername = result.data.users.username
+            this.currentHeadimg = result.data.users.headimg
+            this.currentGroupimg = result.data.group.group_avatar
+            if (
+              result.data.group.is_invite &&
+              !this.carryPassword &&
+              !result.data.users.isPassword
+            ) {
+              this.isShowPopup = true
+            } else {
+              this.loading = true
+              await this.getNewsData(this.userInfo.seller.seller_code)
+              await this.getGroupList(this.gid)
+              await this.getGroupChatLog({
+                page: 1,
+                group_id: this.gid,
+                seller_code: this.userInfo.seller.seller_code,
+                uid: this.userInfo.data.uid,
+              })
+            }
+          } else if (result.data.code === -1) {
+            this.loading = false
+            this.$dialog.alert({
+              message: result.data.msg,
+              showConfirmButton: false,
+              showCancelButton: false,
             })
           }
         })
@@ -656,19 +668,33 @@ export default {
           console.log(err)
         })
     },
+    createGroupNewUser() {
+      createGroupUser({
+        group_id: this.gid,
+        seller_code: this.userInfo.seller.seller_code,
+        uid: this.userInfo.data.uid,
+        username: this.username,
+        headimg: this.userInfo.data.headimg,
+      })
+        .then((result) => {})
+        .catch((err) => {})
+    },
   },
   created() {},
   mounted() {
     this.judgment()
       .then(async () => {
         this.getUserInfo(async () => {
+          if (this.carryPassword) {
+            await this.createGroupNewUser()
+          }
           await this.getGroupData()
         })
       })
       .catch((err) => {
         console.log(err)
         this.$dialog.alert({
-          message: '商家不存在或参数错误！',
+          message: this.$t('merchantError'),
           showConfirmButton: false,
           showCancelButton: false,
         })

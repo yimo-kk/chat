@@ -26,7 +26,11 @@
     <div
       :class="[
         'who_chat',
-        name ? 'chat_box_width_group' : 'chat_box_width_server',
+        name
+          ? 'chat_box_width_group'
+          : isQuestion
+          ? 'chat_box_width_group'
+          : 'chat_box_width_server',
       ]"
     >
       <div class="chat_title">
@@ -105,9 +109,15 @@
               <div v-if="item.type === 0" class="flex">
                 <div class="left content">
                   <!--  v-if="!item.voice_path" -->
-                  <span style="white-space: pre-line;word-break: break-word;">{{
+                  <span
+                    style="white-space: pre-line;word-break: break-word;"
+                    v-html="parsingEmoji(item.content || item.message)"
+                  >
+                    <!-- {{
                     item.content || item.message
-                  }}</span>
+                  }} -->
+                  </span>
+
                   <div
                     v-if="item.type == 0 && item.is_voice && !name"
                     class="playIcon flex"
@@ -127,24 +137,6 @@
                     ></Audio>
                   </div>
                 </div>
-
-                <!-- 文字转语音图标 -->
-                <!-- <div
-                v-if="isTts"
-                class="playIcon"
-                status="stop"
-                :title="$t('tts')"
-                no="1"
-                @click="translationStart(item.content || item.message, index)"
-              >
-                <div class="small"></div>
-                <div
-                  :class="['middle', ttsIndex == index ? '' : 'stopanimate']"
-                ></div>
-                <div
-                  :class="['large', ttsIndex == index ? '' : 'stopanimate']"
-                ></div>
-              </div> -->
               </div>
               <p
                 v-else-if="item.type === 1"
@@ -273,8 +265,10 @@
                 style="white-space: pre-line;word-break: break-word;"
                 v-if="item.type === 0"
                 class="content right"
-                >{{ item.message || item.content }}</span
+                v-html="parsingEmoji(item.content || item.message)"
               >
+                <!-- {{ item.message || item.content }} -->
+              </span>
               <p
                 v-else-if="item.type === 1"
                 class="content right"
@@ -400,8 +394,6 @@ import Axios from 'axios'
 import qs from 'qs'
 import Audio from '@/components/chatPage/audio.vue'
 import viewAnnouncement from '@/components/viewAnnouncement'
-// import IatRecorder from '@/libs/js/IatRecorder.js'
-// const iatRecorder = new IatRecorder('en_us')
 export default {
   name: 'ChatInfo',
   props: {
@@ -470,7 +462,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['userInfo', 'username', 'code']),
+    ...mapState(['userInfo', 'username', 'code', 'isQuestion']),
     isViewDate(index) {
       return (index) => {
         if (this.messages[index] && this.messages[index - 1]) {
@@ -546,10 +538,8 @@ export default {
       try {
         let dUrl
         typeof content == 'string' ? (dUrl = content) : (dUrl = content.src)
-        if (
-          dUrl.split('.').pop() === 'pdf' ||
-          dUrl.split('.').pop() === 'txt'
-        ) {
+        let suffix = ['pdf', 'txt'] //, 'jpg', 'png', 'jepg', 'gif'
+        if (suffix.includes(dUrl.split('.').pop())) {
           var request = new XMLHttpRequest()
           request.responseType = 'blob'
           request.open('GET', dUrl, true)
@@ -564,6 +554,19 @@ export default {
           }
           request.send()
         } else {
+          if (['jpg', 'png', 'jepg', 'gif'].includes(dUrl.split('.').pop())) {
+            // this.downloadIamge(
+            //   dUrl,
+            //   typeof content == 'string' ? filename : content.filename
+            // )
+            ImagePreview({
+              images: [dUrl],
+              closeable: true,
+              showIndex: false,
+              loop: false,
+            })
+            return
+          }
           let aLink = document.createElement('a')
           let evt = document.createEvent('HTMLEvents')
           evt.initEvent('click', true, true) //initEvent 不加后两个参数在FF下会报错  事件类型，是否冒泡，是否阻止浏览器的默认行为
@@ -576,6 +579,27 @@ export default {
         this.$toast(this.$t('fileErr'))
       }
     },
+    downloadIamge(imgsrc, name) {
+      //下载图片地址和图片名
+      let image = new Image()
+      // 解决跨域 Canvas 污染问题
+      image.setAttribute('crossOrigin', 'anonymous')
+      image.onload = function() {
+        let canvas = document.createElement('canvas')
+        canvas.width = image.width
+        canvas.height = image.height
+        let context = canvas.getContext('2d')
+        context.drawImage(image, 0, 0, image.width, image.height)
+        let url = canvas.toDataURL('image/png') //得到图片的base64编码数据
+        let a = document.createElement('a') // 生成一个a元素
+        let event = new MouseEvent('click') // 创建一个单击事件
+        a.download = name || 'photo' // 设置图片名称
+        a.href = url // 将生成的URL设置为a.href属性
+        a.dispatchEvent(event) // 触发a的单击事件
+      }
+      image.src = imgsrc
+    },
+
     // pc取消发送语音需要暂停处理
     pcCancel() {
       this.$emit('pcCancel')
@@ -618,33 +642,6 @@ export default {
       localStorage.setItem('seller_code', this.userInfo.seller.seller_code)
       this.$router.push({ name: 'Message' })
     },
-    // // 文字转语音开始
-    // textChange() {
-    //   let that = this
-    //   if (
-    //     ['init', 'endPlay', 'errorTTS'].indexOf(this.iatRecorder.status) > -1
-    //   ) {
-    //     this.iatRecorder.start()
-    //   } else {
-    //     this.iatRecorder.stop()
-    //   }
-    // },
-    // // 文字转语音结束
-    // translationEnd() {
-    //   this.iatRecorder.stop()
-    // },
-    // // 转语音的文字
-    // translationStart(val, index) {
-    //   if (this.ttsIndex && this.ttsIndex === index) {
-    //     this.iatRecorder.stop()
-    //     return
-    //   }
-    //   this.ttsIndex = index
-    //   this.iatRecorder.setParams({
-    //     text: val,
-    //   })
-    //   this.textChange()
-    // },
     translationStart() {},
   },
   mounted() {
@@ -667,8 +664,6 @@ export default {
 <style lang="less" scoped>
 .playIcon {
   display: flex;
-  // width: 3rem;
-  // padding: 0px 8px 0 0px;
   border-radius: 3px;
 }
 .small {

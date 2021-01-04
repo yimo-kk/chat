@@ -1,7 +1,7 @@
 <template>
   <div class="announcement">
-    <div  class="mask" @click="close"></div>
-    
+    <div class="mask" @click="close"></div>
+
     <div class="announcement_list">
       <div class="close flex_center">
         <van-icon
@@ -12,47 +12,50 @@
           @click="close"
         ></van-icon>
       </div>
-      <h4 class="new-title">公告</h4>
-     <div>
-        <p v-for="(item,index) in newList" :key="item.news_id" class="newList-item"> 
-          <span class="content">{{`${index+1}.${item.content}`}}</span>
-          <span class="time">{{item.create_time}}</span>
+      <h4 class="new-title">最新公告</h4>
+      <div class="newList">
+        <p
+          v-for="(item, index) in newList"
+          :key="item.news_id"
+          class="newList-item"
+        >
+          <span class="content">{{ `${index + 1}.${item.content}` }}</span>
+          <span class="time">{{ item.create_time }}</span>
         </p>
-     </div>
+      </div>
     </div>
-  </div> 
-</template> 
+  </div>
+</template>
 
 <script>
 export default {
-  name: "viewAnnouncement",
+  name: 'viewAnnouncement',
   components: {},
-  props:{
-    newList:{
-      type:Array,
-      default:()=>{
+  props: {
+    newList: {
+      type: Array,
+      default: () => {
         return []
-      }
-    }
+      },
+    },
   },
   data() {
-    return {};
+    return {}
   },
   computed: {},
   watch: {},
   methods: {
-  
     close() {
-      this.$emit("close");
-    }
+      this.$emit('close')
+    },
   },
   created() {},
-  mounted() {}
-};
+  mounted() {},
+}
 </script>
-<style lang='less' scoped>
+<style lang="less" scoped>
 .announcement {
-  .mask{
+  .mask {
     position: fixed;
     top: 0;
     left: 0;
@@ -63,40 +66,59 @@ export default {
   }
   .announcement_list {
     position: absolute;
-    top:50%;
+    top: 50%;
     left: 50%;
-    transform: translate(-50%,-50%);
-    overflow: auto;
-    max-height: 60%;
+    transform: translate(-50%, -50%);
+    max-height: 30rem;
     min-height: 20%;
     width: 80%;
     background: #fff;
     padding: 5px;
     border-radius: 5px;
     z-index: 222;
-    .new-title{
+    .new-title {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: #2472ff;
       text-align: center;
-      padding: 5px;
+      padding: 1rem 0.5rem;
     }
-    .newList-item{
-      padding: 10px;
-      .content{
-      line-height: 1.5rem;
-      word-break: break-word;
+    .newList {
+      overflow: auto;
+      background-color: #f9fbff;
+      margin: 0 1.3rem 1.3rem;
+      max-height: 25rem;
+      .newList-item {
+        padding: 10px;
+        .content {
+          line-height: 1.5rem;
+          word-break: break-word;
+        }
+      }
+      &::-webkit-scrollbar {
+        width: 4px;
+        /*高宽分别对应横竖滚动条的尺寸*/
+        // background-color: #fff;
+        border-radius: 2px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        border-radius: 2px;
+        background: #d8d8d8;
+      }
+
+      .time {
+        margin-left: 5px;
+        color: #ccc;
+        word-break: break-word;
+        display: block;
+      }
     }
-    .time{
-      margin-left: 5px;
-      color: #ccc;
-      word-break: break-word;
-      display: block;
-    }
-    }
-    
   }
   .close {
     position: absolute;
-    top: .5rem;
-    right: .5rem;
+    top: 0.9rem;
+    right: 0.9rem;
     background-color: #eee;
     border-radius: 50%;
   }

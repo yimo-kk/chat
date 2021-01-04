@@ -1,4 +1,4 @@
-const appData = require("@/assets/emojis.json");
+
 // 换算文件大小
 const fileSize = function (num) {
   num = parseInt(num);

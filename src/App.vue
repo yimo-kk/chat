@@ -16,16 +16,16 @@ export default {
     }
   },
   computed: {
-    ...mapState(['username']),
+    ...mapState(['username', 'labelTitle']),
   },
   mounted() {
     let that = this
     document.addEventListener('click', () => {
-      that.$store.commit('closeTitleScrolling', '尊敬的用户,欢迎您')
+      that.$store.commit('closeTitleScrolling', this.labelTitle)
       this.$store.commit('setNum', 0)
     })
     document.addEventListener('touchstart', () => {
-      that.$store.commit('closeTitleScrolling', '尊敬的用户,欢迎您')
+      that.$store.commit('closeTitleScrolling', this.labelTitle)
       this.$store.commit('setNum', 0)
     })
   },

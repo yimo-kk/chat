@@ -12,6 +12,9 @@ import "@/assets/css/common.css";
 import "./assets/iconfont/iconfont.css";
 import "vant/lib/index.css";
 import i18n from './i18n';
+// 表情
+import './assets/emjoy/emjoymethod.js'
+import './assets/emjoy/emjoy.css'
 // 移动端调试
 // import Vconsole from "vconsole";
 // let vConsole = new Vconsole();
@@ -72,7 +75,7 @@ Vue.prototype.$dayjs = dayjs; //可以全局使用dayjs
 Vue.use(
   new VueSocketIO({
     debug: true,
-    connection: SocketIO.connect(`wss://server.customerchat.org`,
+    connection: SocketIO.connect(`wss://${process.env.VUE_APP_BASE_URL_CONTENT}`,
       {
         transports: ['websocket', 'xhr-polling', 'jsonp-polling'],
       }

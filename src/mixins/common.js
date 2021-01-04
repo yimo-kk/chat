@@ -6,7 +6,7 @@ import {
 } from "@/api/chat.js";
 import {
   isIE,
-  conversion,
+  // conversion,
   conversionFace,
   setStorage,
   getStorage,
@@ -14,7 +14,8 @@ import {
   segmentation,
   createUserName
 } from "@/libs/utils.js";
-const appData = require("@/assets/emojis.json");
+// const appData = require("@/assets/emojis.json");
+import { emojisAmap, wChatToUi } from '@/assets/emjoy/emjoydata'
 import { mapState, mapMutations } from "vuex";
 import Recorder from "js-audio-recorder";
 let recorderData
@@ -59,7 +60,8 @@ export default function () {
       },
       sendText (newVal) {
         if (!newVal) return
-        var str = conversion(newVal)
+        // var str = conversion(newVal)
+        var str = newVal
         if (str.length >= 188) {
           this.$toast(this.$t('overLimit'))
           var string = str.slice(0, 188)
@@ -69,15 +71,16 @@ export default function () {
               arr.pop()
             }
           })
-          this.sendText = conversionFace(arr.join('['))
-        } else {
-          this.sendText = conversionFace(str)
+          // this.sendText = conversionFace(arr.join('['))
+          this.sendText = arr.join('[')
         }
+        // else {
+        //   this.sendText = conversionFace(str)
+        // }
       },
     },
     computed: {
-      ...mapState(["userInfo", "code", "gid", "username", 'kefu_code']),
-
+      ...mapState(["userInfo", "code", "gid", "username", 'kefu_code', 'isQuestion', 'carryPassword']),
       isIE () {
         return !isIE()
       },
@@ -90,11 +93,10 @@ export default function () {
       }
     },
     methods: {
-      ...mapMutations(['setLevel']),
+      ...mapMutations(['setLevel', 'setIsQuestion', 'setCarryPassword']),
       getUserInfo (callback) {
         let params = {
           username: this.username,
-          // is_tourist: this.$route.query.username ? 2 : 0
         }
         if (this.code) {
           params.code = this.code
@@ -115,12 +117,17 @@ export default function () {
               ip: res.data.login_ip,
               address: res.data.area
             }
-            callback()
+            this.setIsQuestion(res.seller.is_question)
+            callback && callback()
           })
           .catch(err => {
             console.log(err)
+            this.$dialog.alert({
+              message: err.data.msg,
+              showConfirmButton: false,
+              showCancelButton: false,
+            })
             this.loading = false
-            this.$toast(err.msg);
           });
       },
       enter (event) {
@@ -135,20 +142,40 @@ export default function () {
         }
       },
       faceContent () {
-        this.faceShow = !this.faceShow;
+        this.faceShow = !this.faceShow
         if (this.faceShow == true) {
-          for (let i in appData) {
-            this.faceList.push(appData[i]);
+          for (let key in emojisAmap) {
+            let obj = {}
+            obj[key] = emojisAmap[key]
+            obj.name = `[${key}]`
+            obj.oldName = key
+            this.faceList.push(obj)
+          }
+          for (let key in wChatToUi) {
+            let obj = {}
+            obj[wChatToUi[key]] = key
+            obj.name = wChatToUi[key]
+            obj.oldName = key
+            this.faceList.push(obj)
           }
         } else {
-          this.faceList = [];
+          this.faceList = []
         }
+        // this.faceShow = !this.faceShow;
+        // if (this.faceShow == true) {
+        //   for (let i in appData) {
+        //     this.faceList.push(appData[i]);
+        //   }
+        // } else {
+        //   this.faceList = [];
+        // }
       },
       getBrow (index) {
         for (let i in this.faceList) {
           if (index == i) {
-            this.getBrowString = this.faceList[index].char;
-            this.sendText += this.getBrowString;
+            // this.getBrowString = this.faceList[index].char;
+            // this.sendText += this.getBrowString;
+            this.sendText += `[${this.faceList[index].oldName}]`
           }
         }
       },
@@ -178,7 +205,7 @@ export default function () {
             }
           })
           .catch(err => {
-            this.$toast("请求超时！");
+            this.$toast(this.$t('timeOut'));
           });
       },
       record (callback) {
@@ -392,7 +419,7 @@ export default function () {
       handleBusinessUser (code, { username, group_id = '', level = 0 }) {
         this.setLevel(level)
         let obj = {}
-        let valueObj = { 'kefu_code': '', 'level': level, 'groupList': [{ 'group_id': group_id, 'isPassword': false }] }
+        let valueObj = { 'kefu_code': '', 'level': level, 'groupList': [{ 'group_id': group_id, }] } //'isPassword': false 
         if (getStorage(code)) {
           obj = JSON.parse(getStorage(code))
           let nowObj = {}
@@ -407,7 +434,7 @@ export default function () {
               }
             })
             if (!isExist && group_id) {
-              obj[username]['groupList'].push({ 'group_id': group_id || '', 'isPassword': false })
+              obj[username]['groupList'].push({ 'group_id': group_id || '' }) // 'isPassword': false 
             }
             setStorage(code, JSON.stringify(obj))
           }
@@ -433,12 +460,13 @@ export default function () {
                 this.loading = false
                 if (!result.data.data) {
                   this.$dialog.alert({
-                    message: '商家不存在或参数错误！',
+                    message: this.$t('merchantError'),
                     showConfirmButton: false,
                     showCancelButton: false
                   })
                   return
                 }
+                result.data.code === 1 && this.setCarryPassword(true)
                 let data = segmentation(result.data.data)
                 // 当解密没有name时创建一个随机name
                 if (!data.username) {
@@ -450,6 +478,7 @@ export default function () {
                 resolve()
               })
               .catch(err => {
+                console.log(err)
                 reject(err);
               });
           } else {
