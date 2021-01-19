@@ -23,8 +23,17 @@
         @getLog="getLog"
         :chat_time="chatTime"
       ></ChatInfo>
+      <InputBox
+        @sendMessage="textSend"
+        @uploadeImg="uploadeImg"
+        @uploadeFile="uploadeFile"
+        @recordService="recordService"
+        @startRecordServic="startRecordServic"
+        @endRecordService="endRecordService"
+        :audioBtn="isAudio"
+      ></InputBox>
       <!-- 聊天输入框 -->
-      <div class="input_tab">
+      <!-- <div class="input_tab">
         <div class="input_box">
           <div class="handle_other">
             <van-icon
@@ -60,14 +69,6 @@
                 name="tupian"
               ></van-icon>
             </van-uploader>
-
-            <!-- <van-icon
-              v-if="isAudio && isIE"
-              @click="recordService"
-              name="comment-o"
-              style="padding:0 1px"
-              size="1.8rem"
-            /> -->
             <van-icon
               style="padding:5px"
               v-if="isIE"
@@ -123,9 +124,9 @@
                 ></van-icon>
               </van-field>
             </div>
-          </div>
-          <!-- 按钮 -->
-          <div class="buttom">
+          </div> -->
+      <!-- 按钮 -->
+      <!-- <div class="buttom">
             <transition name="van-slide-right">
               <p
                 v-show="sendText.length || !isButtom"
@@ -136,26 +137,32 @@
               </p>
             </transition>
           </div>
-        </div>
-        <!-- 表情区域 -->
-        <div class="browBox" v-if="faceShow">
-          <ul>
-            <li
-              v-html="parsingEmoji(item.name)"
-              v-for="(item, index) in faceList"
-              :key="index"
-              @click.stop="getBrow(index)"
-            ></li>
-            <!-- <li
-              v-for="(item, index) in faceList"
-              :key="index"
-              @click.stop="getBrow(index)"
-            >
-              {{ item.char }}
-            </li> -->
-          </ul>
-        </div>
-      </div>
+        </div> -->
+      <!-- 表情区域 -->
+      <!-- <div v-show="faceShow">
+          <div
+            class="mask"
+            @click="
+              () => {
+                faceShow = false
+                faceList = []
+              }
+            "
+          ></div>
+          <div class="browBoxs">
+            <div class="browBox">
+              <ul>
+                <li
+                  v-html="faceHtml(item)"
+                  v-for="(item, index) in faceList"
+                  :key="index"
+                  @click.stop="getBrow(item)"
+                ></li>
+              </ul>
+            </div>
+          </div>
+        </div> -->
+      <!-- </div> -->
     </div>
     <!-- 暂时隐藏常见问题 -->
     <PcChatList
@@ -191,7 +198,8 @@ import {
 } from '@/api/chat.js'
 import { ImagePreview } from 'vant'
 import PcChatList from '@/components/pcChatList/pcChatList.vue'
-import ChatInfo from '@/components/chatPage/chatInfo.vue'
+import ChatInfo from '@/components/chatBox/chatInfo.vue'
+import InputBox from '@/components/chatBox/inputBox.vue'
 import common from '@/mixins/common'
 import {
   compressImage,
@@ -209,6 +217,7 @@ export default {
   components: {
     PcChatList,
     ChatInfo,
+    InputBox,
   },
   data() {
     return {
@@ -247,15 +256,13 @@ export default {
       console.log('成功')
     },
     // 发生错误关闭连接
-    error() {
-      this.$socket.close()
-    },
+    error() {},
     // disconnect:检测socket断开连接
     disconnect(data) {},
     reconnect(data) {
-      console.log('重连')
       this.$socket.emit('enter', {
         customer_id: this.userInfo.data ? this.userInfo.data.uid : '',
+        group: this.receptionId || 0,
         customer_ip: this.userIp.ip,
         customer_name: this.username,
         seller_code: this.userInfo.seller.seller_code,
@@ -264,6 +271,13 @@ export default {
         customer_area: this.userIp.address,
       })
     },
+    // delKefu(data) {
+    //   let shopInfo = JSON.parse(localStorage.getItem(data.seller_code))
+    //   if (shopInfo[this.username]['kefu_code'] === data.kefu_code) {
+    //     shopInfo[this.username]['kefu_code'] = ''
+    //   }
+    //   localStorage.setItem(data.seller_code, JSON.stringify(shopInfo))
+    // },
     //有客服接待通知
     prompt(data) {
       data.kefu_name = 'kefu'
@@ -328,10 +342,12 @@ export default {
   methods: {
     // 发送消息
     send(data) {
-      if (!this.sendText.length && this.sendType === 0) return
+      if (!data && this.sendType === 0) return
       let my_send = {
         cmd: 'user-service',
-        kefu_code: JSON.parse(getStorage(this.code))[this.username].kefu_code,
+        kefu_code: JSON.parse(getStorage(this.code))[
+          this.userInfo.data.username
+        ].kefu_code,
         from_avatar: this.userInfo.data.headimg,
         message: data,
         from_id: this.userInfo.data.uid ? this.userInfo.data.uid : '',
@@ -342,7 +358,6 @@ export default {
         from_ip: this.userIp.ip,
       }
       let sendMessage = JSON.parse(JSON.stringify(my_send))
-      // this.sendType === 0 && (sendMessage.message = conversion(my_send.message))
       this.$socket.emit('message', sendMessage)
       this.sendText = ''
       this.faceShow = false
@@ -389,6 +404,7 @@ export default {
           this.loading = false
           let data = result.data.data
           data.duration = Math.round(this.recorder.duration)
+
           this.send(data)
         })
         .catch((err) => {
@@ -425,7 +441,6 @@ export default {
           }
         })
         .catch((err) => {
-          console.log(err)
           this.loading = false
           this.$toast(err.msg)
         })
@@ -433,6 +448,7 @@ export default {
     // 发送接待
     reception() {
       this.$socket.emit('enter', {
+        group: this.receptionId || 0,
         customer_id: this.userInfo.data ? this.userInfo.data.uid : '',
         customer_ip: this.userIp.ip,
         customer_name: this.username,
@@ -464,7 +480,6 @@ export default {
           }
         })
         .catch((err) => {
-          console.log(err)
           this.$toast(this.$t('commentErr'))
         })
     },
@@ -506,7 +521,6 @@ export default {
           }
         })
         .catch((err) => {
-          console.log(err)
           this.$toast(this.$t('timeOut'))
         })
     },

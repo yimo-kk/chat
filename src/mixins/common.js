@@ -6,8 +6,6 @@ import {
 } from "@/api/chat.js";
 import {
   isIE,
-  // conversion,
-  conversionFace,
   setStorage,
   getStorage,
   getQueryString,
@@ -15,7 +13,8 @@ import {
   createUserName
 } from "@/libs/utils.js";
 // const appData = require("@/assets/emojis.json");
-import { emojisAmap, wChatToUi } from '@/assets/emjoy/emjoydata'
+// import { emojisAmap, wChatToUi } from '@/assets/emjoy/emjoydata'
+import { emojisAmap } from '@/assets/face/index'
 import { mapState, mapMutations } from "vuex";
 import Recorder from "js-audio-recorder";
 let recorderData
@@ -47,7 +46,8 @@ export default function () {
           ip: '',
           address: ''
         },
-        isClose: false
+        isClose: false,
+        receptionId: 0
       };
     },
     watch: {
@@ -77,6 +77,13 @@ export default function () {
         // else {
         //   this.sendText = conversionFace(str)
         // }
+      },
+      //更新公告
+      '$store.state.newNews': {
+        handler (newVal) {
+          this.getNewsData(this.userInfo.seller.seller_code)
+        },
+        deep: true,
       },
     },
     computed: {
@@ -121,7 +128,6 @@ export default function () {
             callback && callback()
           })
           .catch(err => {
-            console.log(err)
             this.$dialog.alert({
               message: err.data.msg,
               showConfirmButton: false,
@@ -143,24 +149,29 @@ export default function () {
       },
       faceContent () {
         this.faceShow = !this.faceShow
-        if (this.faceShow == true) {
-          for (let key in emojisAmap) {
-            let obj = {}
-            obj[key] = emojisAmap[key]
-            obj.name = `[${key}]`
-            obj.oldName = key
-            this.faceList.push(obj)
-          }
-          for (let key in wChatToUi) {
-            let obj = {}
-            obj[wChatToUi[key]] = key
-            obj.name = wChatToUi[key]
-            obj.oldName = key
-            this.faceList.push(obj)
-          }
-        } else {
-          this.faceList = []
-        }
+        this.faceShow == true
+          ? (this.faceList = Object.values(emojisAmap))
+          : (this.faceList = [])
+
+        // this.faceShow = !this.faceShow
+        // if (this.faceShow == true) {
+        //   for (let key in emojisAmap) {
+        //     let obj = {}
+        //     obj[key] = emojisAmap[key]
+        //     obj.name = `[${key}]`
+        //     obj.oldName = key
+        //     this.faceList.push(obj)
+        //   }
+        //   for (let key in wChatToUi) {
+        //     let obj = {}
+        //     obj[wChatToUi[key]] = key
+        //     obj.name = wChatToUi[key]
+        //     obj.oldName = key
+        //     this.faceList.push(obj)
+        //   }
+        // } else {
+        //   this.faceList = []
+        // }
         // this.faceShow = !this.faceShow;
         // if (this.faceShow == true) {
         //   for (let i in appData) {
@@ -170,18 +181,12 @@ export default function () {
         //   this.faceList = [];
         // }
       },
-      getBrow (index) {
-        for (let i in this.faceList) {
-          if (index == i) {
-            // this.getBrowString = this.faceList[index].char;
-            // this.sendText += this.getBrowString;
-            this.sendText += `[${this.faceList[index].oldName}]`
-          }
-        }
+      getBrow (value) {
+        this.sendText += `[${value}]`
       },
-      textSend () {
-        this.sendType = 0;
-        this.send(this.sendText);
+      textSend (content, type) {
+        this.sendType = type;
+        this.send(content);
       },
       // 公告
       getNewsList (seller_code) {
@@ -254,6 +259,7 @@ export default function () {
         event.preventDefault();
         this.posEnd = 0;
         this.posEnd = event.changedTouches[0].pageY; //获取终点坐标
+
         this.btnText = "按住 说话";
         this.isMask = false;
         if (this.posStart - this.posEnd < 100) {
@@ -474,11 +480,11 @@ export default function () {
                     data.username = Object.keys(JSON.parse(getStorage(code)))[0] :
                     data.username = createUserName()
                 }
+                this.receptionId = data.group || 0
                 this.handleBusinessUser(code, data)
                 resolve()
               })
               .catch(err => {
-                console.log(err)
                 reject(err);
               });
           } else {
@@ -551,6 +557,5 @@ export default function () {
       // 测试刷新 关闭
       // this.closed()
     }
-
   };
 }

@@ -2,49 +2,53 @@
   <div class="other">
     <Tab @activtTab="activtTab" :chatType="chatType" :tabs="tabList"></Tab>
     <div v-if="activateId == 1" class="question">
-      <div v-for="(item,index)  in questionData" :key="item.question_id" style="marginBottom: 5px;">
+      <div
+        v-for="(item, index) in questionData"
+        :key="item.question_id"
+        style="marginBottom: 5px;"
+      >
         <div class="question_item" @click="clickQuestion(index)">
           <p class="dwote" :title="item.question">
             <i class="icon iconfont icon-iconfontzhizuobiaozhun19 iconFont"></i>
-            {{item.question}}
+            {{ item.question }}
           </p>
         </div>
-        <p v-show="item.isShow" class="question_answer" >{{item.answer}}</p>
+        <p v-show="item.isShow" class="question_answer">{{ item.answer }}</p>
       </div>
     </div>
     <div v-else-if="activateId == 2" class="group_list">
-      <div v-for="(item,index) in groupMemberList " :key="index">
+      <div v-for="(item, index) in groupMemberList" :key="index">
         <Member :name="item"></Member>
       </div>
     </div>
   </div>
-</template> 
+</template>
 
 <script>
-import Tab from "@/components/chatPage/tab.vue";
-import Member from "@/components/chatPage/member.vue";
+import Tab from '@/components/chatBox/tab.vue'
+import Member from '@/components/chatBox/member.vue'
 export default {
-  name: "PcChatList",
+  name: 'PcChatList',
   props: {
     chatType: {
-      type: Number
+      type: Number,
     },
     groupMemberList: {
       type: Array,
       default() {
-        return [];
-      }
+        return []
+      },
     },
     questionList: {
       type: Array,
       default() {
-        return [];
-      }
-    }
+        return []
+      },
+    },
   },
   components: {
     Tab,
-    Member
+    Member,
   },
   data() {
     // 暂时只有客服1和群2，私人3暂时没做
@@ -55,69 +59,69 @@ export default {
       tabList: [
         {
           id: 1,
-          name:  this.$t('groupMember')
+          name: this.$t('groupMember'),
         },
         {
           id: 2,
-          name:  this.$t('problem')
+          name: this.$t('problem'),
         },
         {
           id: 3,
-          name: this.$t('announcement')
-        }
-      ]
-    };
+          name: this.$t('announcement'),
+        },
+      ],
+    }
   },
   computed: {},
   watch: {
     questionList: {
       handler(newVal) {
-        this.questionData = JSON.parse(JSON.stringify(newVal));
+        this.questionData = JSON.parse(JSON.stringify(newVal))
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
   methods: {
     activtTab(id) {
-      this.activateId = id;
-      this.$emit("activtTab", id);
+      this.activateId = id
+      this.$emit('activtTab', id)
     },
     chatMessage(value) {
       // this.$emit("chatMessage", value);
     },
     clickQuestion(val) {
       if (this.questionData[val].isShow) {
-        this.questionData[val].isShow = !this.questionData[val].isShow;
-        return;
+        this.questionData[val].isShow = !this.questionData[val].isShow
+        return
       }
       this.questionData.map((item, index) => {
         if (index === val) {
-          item.isShow = true;
+          item.isShow = true
         } else {
-          item.isShow = false;
+          item.isShow = false
         }
-      });
-    }
+      })
+    },
   },
   created() {},
-  mounted() {}
-};
+  mounted() {},
+}
 </script>
-<style lang='less' scoped>
+<style lang="less" scoped>
 .group_list {
   padding: 10px 0;
   overflow: auto;
   height: 90%;
-   &::-webkit-scrollbar {
-        width: 4px;
-        /*高宽分别对应横竖滚动条的尺寸*/
-        // background-color: #fff;
-        border-radius: 2px;
-    }
-    &::-webkit-scrollbar-thumb {
-        border-radius: 2px;
-        background: #d8d8d8;
-    }
+  &::-webkit-scrollbar {
+    width: 4px;
+    /*高宽分别对应横竖滚动条的尺寸*/
+    // background-color: #fff;
+    border-radius: 2px;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 2px;
+    background: #d8d8d8;
+  }
 }
 .question {
   padding: 10px;
@@ -136,7 +140,7 @@ export default {
     padding: 5px;
     color: #585858;
     white-space: pre-line;
-    font-size: .8rem;
+    font-size: 0.8rem;
   }
 }
 </style>

@@ -21,12 +21,24 @@ export default new Vuex.Store({
     level: 0,
     isQuestion: null, // 是否显示常见问题
     carryPassword: false, // 是否携带正确密码
+    newNews: {}, // 更新公告
   },
   mutations: {
     SOCKET_chatTime (state, data) {
       if (data.seller_code == state.code) {
         state.userInfo.seller.chat_time = data.chat_time
       }
+    },
+    // 公告更新
+    SOCKET_saveNews (state, data) {
+      state.newNews = data
+    },
+    SOCKET_delKefu (state, data) {
+      let shopInfo = JSON.parse(localStorage.getItem(data.seller_code))
+      if (shopInfo[state.username]['kefu_code'] === data.kefu_code) {
+        shopInfo[state.username]['kefu_code'] = ''
+      }
+      localStorage.setItem(data.seller_code, JSON.stringify(shopInfo))
     },
     setMessageList (state, list) {
       state.messageList = [

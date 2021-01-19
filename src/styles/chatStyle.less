@@ -119,6 +119,10 @@
         }
       }
 
+      .inputBox2 {
+        height: 200px;
+      }
+
       .input_tab {
         position: relative;
       }
@@ -149,6 +153,20 @@
           padding: 5px 0 5px 8px;
           height: 130px;
           width: 100%;
+
+          #input {
+            display: block;
+            height: calc(100% - 18px);
+
+            img {
+              max-width: 200px;
+              max-height: 120px;
+            }
+          }
+
+          .mobileFace {
+            display: none;
+          }
 
           .textarea {
             resize: none;
@@ -211,7 +229,7 @@
     display: none;
   }
 
-  .browBox {
+  .browBoxs {
     width: 500px;
   }
 }
@@ -285,6 +303,8 @@
         position: relative;
       }
 
+      .inputBox2 {}
+
       .input_box {
         padding: 5px;
         height: 60px;
@@ -326,8 +346,23 @@
         }
 
         .send_text {
-          padding: 0 10px;
           width: 100%;
+          position: relative;
+          padding: 0 2rem 0 .5rem;
+          margin-right: .2rem;
+          background-color: #fff;
+
+          #input {
+            height: 3rem;
+            border-radius: 5px;
+          }
+
+          .mobileFace {
+            position: absolute;
+            top: 50%;
+            right: .5rem;
+            transform: translate(0, -50%);
+          }
 
           .input_content {
             border-radius: 5px;
@@ -391,7 +426,7 @@
     bottom: 60px;
   }
 
-  .browBox {
+  .browBoxs {
     width: 100%;
   }
 }
@@ -639,13 +674,24 @@
   margin-top: 75px;
 }
 
+.browBoxs {
+  background: #fff;
+  position: absolute;
+  top: -215px;
+  padding: 10px 10px 10px 0;
+  border-radius: 5px;
+  // border: 0.5px solid #bbbbbb;
+  box-shadow: 1px -3px 10px #7f7f7f;
+}
+
 .browBox {
   height: 200px;
-  background: #f2f3f4;
-  position: absolute;
-  top: -200px;
+  width: 100%;
+  // background: #f2f3f4;
+  // position: absolute;
+  // top: -200px;
   overflow: auto;
-  box-shadow: 0 0 5px #ccc;
+  // box-shadow: 0 0 5px #ccc;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -665,7 +711,7 @@
     padding: 10px 0 10px 10px;
 
     li {
-      width: 7%;
+      width: 9%;
       font-size: 20px;
       list-style: none;
       text-align: center;

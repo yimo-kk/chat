@@ -26,7 +26,17 @@
           :chat_time="chatTime"
         ></ChatInfo>
         <!-- 聊天输入框 -->
-        <div class="input_tab">
+        <!-- <InputBox @sendMessage="textSend"></InputBox> -->
+        <InputBox
+          @sendMessage="textSend"
+          @uploadeImg="uploadeImg"
+          @uploadeFile="uploadeFile"
+          @recordService="recordService"
+          @startRecordServic="startRecordServic"
+          @endRecordService="endRecordService"
+          :audioBtn="isAudio"
+        ></InputBox>
+        <!-- <div class="input_tab">
           <div class="input_box">
             <div class="handle_other">
               <van-icon
@@ -63,17 +73,9 @@
                   name="tupian"
                 ></van-icon>
               </van-uploader>
-              <!-- 由商家控制 -->
-              <van-icon
-                v-if="isAudio & isIE && on_voice"
-                @click="recordService"
-                name="comment-o"
-                style="padding:5px"
-                size="1.8rem"
-              />
               <van-icon
                 style="padding:5px"
-                v-else-if="isIE && on_voice"
+                v-if="isIE && on_voice"
                 class="iconfont font_size"
                 size="1.8rem"
                 class-prefix="icon"
@@ -123,9 +125,9 @@
                   ></van-icon>
                 </van-field>
               </div>
-            </div>
-            <!-- 按钮 -->
-            <div class="buttom">
+            </div> -->
+        <!-- 按钮 -->
+        <!-- <div class="buttom">
               <transition name="van-slide-right">
                 <p
                   v-show="sendText.length || !isButtom"
@@ -135,27 +137,33 @@
                   {{ $t('send') }}
                 </p>
               </transition>
+            </div> -->
+        <!-- </div> -->
+        <!-- 表情区域 -->
+        <!-- <div v-show="faceShow">
+            <div
+              class="mask"
+              @click="
+                () => {
+                  faceShow = false
+                  faceList = []
+                }
+              "
+            ></div>
+            <div class="browBoxs">
+              <div class="browBox">
+                <ul>
+                  <li
+                    v-html="faceHtml(item)"
+                    v-for="(item, index) in faceList"
+                    :key="index"
+                    @click.stop="getBrow(item)"
+                  ></li>
+                </ul>
+              </div>
             </div>
-          </div>
-          <!-- 表情区域 -->
-          <div class="browBox" v-if="faceShow">
-            <ul>
-              <li
-                v-html="parsingEmoji(item.name)"
-                v-for="(item, index) in faceList"
-                :key="index"
-                @click.stop="getBrow(index)"
-              ></li>
-              <!-- <li
-                v-for="(item, index) in faceList"
-                :key="index"
-                @click.stop="getBrow(index)"
-              >
-                {{ item.char }}
-              </li> -->
-            </ul>
-          </div>
-        </div>
+          </div> -->
+        <!-- </div> -->
       </div>
       <pcChatList
         v-if="!isButtom"
@@ -185,8 +193,9 @@
 <script>
 import { mapState } from 'vuex'
 import pcChatList from '@/components/pcChatList/pcChatList.vue'
-import ChatInfo from '@/components/chatPage/chatInfo.vue'
+import ChatInfo from '@/components/chatBox/chatInfo.vue'
 import enterPopup from '@/components/popup/enterPopup.vue'
+import InputBox from '@/components/chatBox/inputBox.vue'
 import common from '@/mixins/common'
 
 import {
@@ -198,7 +207,6 @@ import {
   getGroupData,
   createGroupUser,
 } from '@/api/chat.js'
-
 import {
   setStorageData,
   getStorage,
@@ -218,6 +226,7 @@ export default {
     pcChatList,
     ChatInfo,
     enterPopup,
+    InputBox,
   },
   data() {
     return {
@@ -264,13 +273,22 @@ export default {
     // disconnect:检测socket断开连接
     disconnect(data) {},
     reconnect(data) {
-      console.log('重连')
       this.$socket.emit('group', {
+        headimg: this.userInfo.data.headimg,
         username: this.username,
         group_id: this.gid,
+        login_ip: this.userIp.ip,
         seller_code: this.code || this.userInfo.seller.seller_code,
         nickname: this.userInfo.data.nickname,
       })
+    },
+
+    // 控制群 发送文件和语音
+    saveGroup(data) {
+      if (data) {
+        this.on_file = data.on_file
+        this.on_voice = data.on_voice
+      }
     },
     // 收到群消息
     groupMsg(data) {
@@ -383,7 +401,7 @@ export default {
   methods: {
     // 发送消息
     send(data) {
-      if (!this.sendText.length && this.sendType === 0) return
+      if (!data && this.sendType === 0) return
       let my_send = {
         cmd: 'user-group',
         message: data,
@@ -440,6 +458,7 @@ export default {
             this.$socket.emit('group', {
               username: this.username,
               group_id: this.gid,
+              login_ip: this.userIp.ip,
               seller_code: this.userInfo.seller.seller_code,
               headimg: this.userInfo.data.headimg,
               nickname: this.userInfo.data.nickname,
@@ -481,7 +500,6 @@ export default {
           this.$set(this.groupMember, 'num', result.data.data.length)
         })
         .catch((err) => {
-          console.log(err)
           this.$toast(this.$t('timeOut'))
         })
     },
@@ -493,10 +511,11 @@ export default {
           let vals = this.memberVal(that.groupMember.data)
           if (Array.isArray(data)) {
             let addVals = this.memberVal(data)
+            let newData = this.conversionNickname(data)
             addVals.forEach((item) => {
               if (!vals.includes(item)) {
                 that.groupMember.num += 1
-                that.groupMember.data.push(...data)
+                that.groupMember.data.push(...newData)
               }
             })
           } else {
@@ -532,6 +551,12 @@ export default {
               return item.username
             })
           }
+        },
+        conversionNickname(list) {
+          return list.map((item) => {
+            item.nickname = Object.values(JSON.parse(item.nickname)).toString()
+            return item
+          })
         },
       }
       method[opt](data)
@@ -665,7 +690,6 @@ export default {
         })
         .catch((err) => {
           this.loading = false
-          console.log(err)
         })
     },
     createGroupNewUser() {
@@ -692,7 +716,6 @@ export default {
         })
       })
       .catch((err) => {
-        console.log(err)
         this.$dialog.alert({
           message: this.$t('merchantError'),
           showConfirmButton: false,

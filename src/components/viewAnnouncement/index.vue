@@ -14,12 +14,8 @@
       </div>
       <h4 class="new-title">最新公告</h4>
       <div class="newList">
-        <p
-          v-for="(item, index) in newList"
-          :key="item.news_id"
-          class="newList-item"
-        >
-          <span class="content">{{ `${index + 1}.${item.content}` }}</span>
+        <p v-for="item in newList" :key="item.news_id" class="newList-item">
+          <span class="content">{{ `${item.content}` }}</span>
           <span class="time">{{ item.create_time }}</span>
         </p>
       </div>
@@ -77,21 +73,21 @@ export default {
     border-radius: 5px;
     z-index: 222;
     .new-title {
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       font-weight: 500;
       color: #2472ff;
       text-align: center;
-      padding: 1rem 0.5rem;
+      padding: 1rem;
     }
     .newList {
       overflow: auto;
       background-color: #f9fbff;
       margin: 0 1.3rem 1.3rem;
-      max-height: 25rem;
+      max-height: 24rem;
       .newList-item {
         padding: 10px;
         .content {
-          line-height: 1.5rem;
+          // line-height: 1.5rem;
           word-break: break-word;
         }
       }
@@ -112,6 +108,7 @@ export default {
         color: #ccc;
         word-break: break-word;
         display: block;
+        font-size: 0.5rem;
       }
     }
   }

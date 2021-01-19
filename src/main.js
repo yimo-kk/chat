@@ -14,6 +14,7 @@ import "vant/lib/index.css";
 import i18n from './i18n';
 // 表情
 import './assets/emjoy/emjoymethod.js'
+import './assets/face/faceToHtml.js'
 import './assets/emjoy/emjoy.css'
 // 移动端调试
 // import Vconsole from "vconsole";

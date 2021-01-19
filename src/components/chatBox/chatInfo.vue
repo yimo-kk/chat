@@ -102,20 +102,15 @@
           >
             <img class="head_portrait" :src="item.from_avatar" alt />
             <div style="margin: 0 10px;" class="chat_content_text_left">
-              <!-- v-if="name" -->
               <span style="font-size: 12px;color:#ccc">{{
                 item.state === 1 || !name ? item.from_name : item.nickname
               }}</span>
               <div v-if="item.type === 0" class="flex">
                 <div class="left content">
-                  <!--  v-if="!item.voice_path" -->
                   <span
                     style="white-space: pre-line;word-break: break-word;"
-                    v-html="parsingEmoji(item.content || item.message)"
+                    v-html="conversionFace(item.content || item.message)"
                   >
-                    <!-- {{
-                    item.content || item.message
-                  }} -->
                   </span>
 
                   <div
@@ -265,9 +260,8 @@
                 style="white-space: pre-line;word-break: break-word;"
                 v-if="item.type === 0"
                 class="content right"
-                v-html="parsingEmoji(item.content || item.message)"
+                v-html="conversionFace(item.content || item.message)"
               >
-                <!-- {{ item.message || item.content }} -->
               </span>
               <p
                 v-else-if="item.type === 1"
@@ -392,7 +386,7 @@ import { mapState } from 'vuex'
 import { ImagePreview } from 'vant'
 import Axios from 'axios'
 import qs from 'qs'
-import Audio from '@/components/chatPage/audio.vue'
+import Audio from '@/components/chatBox/audio.vue'
 import viewAnnouncement from '@/components/viewAnnouncement'
 export default {
   name: 'ChatInfo',
@@ -555,10 +549,6 @@ export default {
           request.send()
         } else {
           if (['jpg', 'png', 'jepg', 'gif'].includes(dUrl.split('.').pop())) {
-            // this.downloadIamge(
-            //   dUrl,
-            //   typeof content == 'string' ? filename : content.filename
-            // )
             ImagePreview({
               images: [dUrl],
               closeable: true,
