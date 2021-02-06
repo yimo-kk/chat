@@ -14,7 +14,6 @@
               }
             "
           ></van-icon>
-          <!--  localStorage.removeItem('seller_code') -->
         </div>
         <p>{{ $t('message') }}</p>
       </header>
@@ -130,7 +129,7 @@ export default {
       getSellerLeave({
         seller_code: this.userInfo.seller
           ? this.userInfo.seller.seller_code
-          : localStorage.getItem('seller_code'),
+          : sessionStorage.getItem('seller_code'),
       }).then((res) => {
         this.userMessage = res.data
       })

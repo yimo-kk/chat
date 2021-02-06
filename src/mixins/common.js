@@ -20,8 +20,8 @@ import Recorder from "js-audio-recorder";
 let recorderData
 if (!isIE()) {
   recorderData = new Recorder({
-    sampleBits: 8, // 采样位数，支持 8 或 16，默认是16
-    sampleRate: 22050, // 采样率，支持 11025、16000、22050、24000、44100、48000，根据浏览器默认值，我的chrome是48000
+    sampleBits: 16, // 采样位数，支持 8 或 16，默认是16
+    sampleRate: 24000, // 采样率，支持 11025、16000、22050、24000、44100、48000，根据浏览器默认值，我的chrome是48000
     numChannels: 1 // 声道，支持 1 或 2， 默认是1e
   });
 }
@@ -464,6 +464,9 @@ export default function () {
             await userDecode({ u, code })
               .then((result) => {
                 this.loading = false
+                if (result.data.code == -1) {
+                  reject(result.data);
+                }
                 if (!result.data.data) {
                   this.$dialog.alert({
                     message: this.$t('merchantError'),

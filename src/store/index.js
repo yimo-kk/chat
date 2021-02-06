@@ -34,11 +34,11 @@ export default new Vuex.Store({
       state.newNews = data
     },
     SOCKET_delKefu (state, data) {
-      let shopInfo = JSON.parse(localStorage.getItem(data.seller_code))
+      let shopInfo = JSON.parse(sessionStorage.getItem(data.seller_code))
       if (shopInfo[state.username]['kefu_code'] === data.kefu_code) {
         shopInfo[state.username]['kefu_code'] = ''
       }
-      localStorage.setItem(data.seller_code, JSON.stringify(shopInfo))
+      sessionStorage.setItem(data.seller_code, JSON.stringify(shopInfo))
     },
     setMessageList (state, list) {
       state.messageList = [

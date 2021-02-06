@@ -2,6 +2,7 @@
   <div class="inputBox2">
     <div class="input_tab">
       <div class="input_box">
+        <div class="is-readonly" v-if="readonly"></div>
         <div class="handle_other">
           <van-icon
             class="iconfont faceShow font_size"
@@ -66,8 +67,6 @@
             @blur="getblur"
             @paste="setPasteImg"
           ></div>
-          <!--  @focus="inputContent"
-            @input="inputContent" -->
           <div class="mobileFace">
             <van-icon
               class="iconfont"
@@ -118,24 +117,7 @@
 
 <script>
 import common from '@/mixins/common'
-import {
-  getServiceChatLog,
-  uploadVoice,
-  praise,
-  getApiList,
-  getApiById,
-  getQuestionList,
-} from '@/api/chat.js'
-import {
-  compressImage,
-  isImage,
-  base64ToBlob,
-  setStorage,
-  getStorage,
-  conversionFace,
-  createUserName,
-  isIE,
-} from '@/libs/utils.js'
+
 export default {
   name: 'inputBox2',
   mixins: [common()],
@@ -149,13 +131,16 @@ export default {
       type: Boolean,
       default: false,
     },
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
       nodeValue: '',
       sel: null,
       range: null,
-      // showBtn: false,
     }
   },
   computed: {},
@@ -292,7 +277,7 @@ export default {
               this.$emit('sendMessage', this.sendFilterText(sendMessage), 0)
               sendMessage = ''
             } else {
-              this.$message.error('发送内容不能为空！')
+              this.$toast('发送内容不能为空！')
             }
           }
         } else if (item.nodeName == 'IMG') {
@@ -370,7 +355,7 @@ export default {
       if (!newVal) return
       var str = newVal
       if (str.length >= 240) {
-        this.$message.error(this.$t('overLimit'))
+        this.$toast(this.$t('overLimit'))
         var string = str.slice(0, 240)
         var arr = string.split('[')
         arr.forEach((item, index) => {
@@ -486,13 +471,22 @@ export default {
     line-height: 30px;
     background: #ccc;
     border-radius: 5px;
-    // .pointer();
   }
 
   .activt_btn {
     background-color: #1890ff;
     color: #fff;
   }
+}
+.is-readonly {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(243, 243, 243, 0.5);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  z-index: 1;
 }
 
 #input:empty::before {

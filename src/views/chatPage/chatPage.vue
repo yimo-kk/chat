@@ -22,8 +22,10 @@
         :count="count"
         @getLog="getLog"
         :chat_time="chatTime"
+        :readonly="readonly"
       ></ChatInfo>
       <InputBox
+        :readonly="readonly"
         @sendMessage="textSend"
         @uploadeImg="uploadeImg"
         @uploadeFile="uploadeFile"
@@ -196,7 +198,6 @@ import {
   getApiById,
   getQuestionList,
 } from '@/api/chat.js'
-import { ImagePreview } from 'vant'
 import PcChatList from '@/components/pcChatList/pcChatList.vue'
 import ChatInfo from '@/components/chatBox/chatInfo.vue'
 import InputBox from '@/components/chatBox/inputBox.vue'
@@ -204,12 +205,9 @@ import common from '@/mixins/common'
 import {
   compressImage,
   isImage,
-  base64ToBlob,
   setStorage,
   getStorage,
   conversionFace,
-  createUserName,
-  isIE,
 } from '@/libs/utils.js'
 export default {
   name: 'ChatPage',
@@ -247,6 +245,7 @@ export default {
       count: 0,
       isMore: false,
       server_status: null,
+      readonly: false, // 默认输入框可编辑 结束会话后禁止输入
     }
   },
   watch: {},
@@ -271,13 +270,7 @@ export default {
         customer_area: this.userIp.address,
       })
     },
-    // delKefu(data) {
-    //   let shopInfo = JSON.parse(localStorage.getItem(data.seller_code))
-    //   if (shopInfo[this.username]['kefu_code'] === data.kefu_code) {
-    //     shopInfo[this.username]['kefu_code'] = ''
-    //   }
-    //   localStorage.setItem(data.seller_code, JSON.stringify(shopInfo))
-    // },
+
     //有客服接待通知
     prompt(data) {
       data.kefu_name = 'kefu'
@@ -337,6 +330,8 @@ export default {
           state: 2,
           message: this.userInfo.seller.end_word,
         })
+
+      this.readonly = true // 收到评价消息后禁止输入框
     },
   },
   methods: {
@@ -604,7 +599,7 @@ export default {
       })
       .catch((err) => {
         this.$dialog.alert({
-          message: this.$t('merchantError'),
+          message: err.msg,
           showConfirmButton: false,
           showCancelButton: false,
         })

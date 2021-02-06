@@ -717,7 +717,7 @@ export default {
       })
       .catch((err) => {
         this.$dialog.alert({
-          message: this.$t('merchantError'),
+          message: err.msg,
           showConfirmButton: false,
           showCancelButton: false,
         })

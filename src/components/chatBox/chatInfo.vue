@@ -256,13 +256,14 @@
               <p style="text-align: end;font-size: 12px;color:#ccc">
                 {{ item.nickname || item.from_name }}
               </p>
-              <span
-                style="white-space: pre-line;word-break: break-word;"
-                v-if="item.type === 0"
-                class="content right"
-                v-html="conversionFace(item.content || item.message)"
-              >
-              </span>
+              <div v-if="item.type === 0" class="content right">
+                <span
+                  style="white-space: pre-line;word-break: break-word;"
+                  v-html="conversionFace(item.content || item.message)"
+                >
+                </span>
+              </div>
+
               <p
                 v-else-if="item.type === 1"
                 class="content right"
@@ -350,6 +351,10 @@
           >
         </div>
       </div>
+      <div v-if="readonly" class="flex_center second-readonly ">
+        再次咨询客服，
+        <p class="click-me" @click="$router.go(0)">点击我</p>
+      </div>
     </div>
     <!-- pc端 -->
     <div v-if="Pcrecord">
@@ -384,8 +389,6 @@
 <script>
 import { mapState } from 'vuex'
 import { ImagePreview } from 'vant'
-import Axios from 'axios'
-import qs from 'qs'
 import Audio from '@/components/chatBox/audio.vue'
 import viewAnnouncement from '@/components/viewAnnouncement'
 export default {
@@ -417,6 +420,10 @@ export default {
       default: 0,
     },
     name: {
+      type: Boolean,
+      default: false,
+    },
+    readonly: {
       type: Boolean,
       default: false,
     },
@@ -626,10 +633,9 @@ export default {
     changeLocale(type) {
       this.localeval = type
       this.$i18n.locale = type
-      // localStorage.setItem('lang',type)
     },
     message() {
-      localStorage.setItem('seller_code', this.userInfo.seller.seller_code)
+      sessionStorage.setItem('seller_code', this.userInfo.seller.seller_code)
       this.$router.push({ name: 'Message' })
     },
     translationStart() {},
@@ -736,5 +742,13 @@ export default {
   -webkit-animation-name: none;
   -ms-animation-name: none;
   animation-name: none;
+}
+.second-readonly {
+  padding: 10px 0;
+  color: rgb(204, 204, 204);
+  .click-me {
+    color: #45cbef;
+    cursor: pointer;
+  }
 }
 </style>
