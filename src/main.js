@@ -21,8 +21,7 @@ import './assets/emjoy/emjoy.css'
 // let vConsole = new Vconsole();
 // 自定义组件
 // import enterPopup from '@/components/popup/index.js'
-// Vue.use(enterPopup)
-
+// Vue.use(enterPopup) 
 // vant
 import {
   Field,

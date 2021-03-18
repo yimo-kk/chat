@@ -88,7 +88,7 @@
         </div>
       </div>
       <!-- 表情区域 -->
-      <div v-show="faceShow">
+      <div v-show="faceShow" class="click_head_portrait_emoji">
         <div
           class="mask"
           @click="
@@ -100,7 +100,7 @@
         ></div>
         <div class="browBoxs">
           <div class="browBox">
-            <ul>
+            <ul v-show="currentFace == 'emoji'">
               <li
                 v-html="faceHtml(item)"
                 v-for="(item, index) in faceList"
@@ -108,6 +108,49 @@
                 @click.stop="insertEmoji(item)"
               ></li>
             </ul>
+            <div class="heart-emoji" v-show="currentFace == 'heart'">
+              <div class="loading">
+                <van-loading
+                  type="spinner"
+                  color="#1989fa"
+                  v-show="heartEmojiLoading"
+                />
+              </div>
+              <div
+                class="heart-emoji-list"
+                v-for="item in heartEmoji"
+                :key="item.id"
+                @click.stop="sendHeartEmoji(item)"
+              >
+                <img
+                  class="phiz_img"
+                  :src="item.phiz_img"
+                  alt=""
+                  :title="item.remarks"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="select-emoji">
+            <div
+              :class="['emoji', currentFace == 'emoji' ? 'active-emoji' : '']"
+              @click="handleEmoji"
+            >
+              <van-icon
+                class="iconfont faceShow font_size"
+                size="1.6rem"
+                class-prefix="icon"
+                slot="right-icon"
+                name="buoumaotubiao49"
+                style="padding:5px"
+              ></van-icon>
+            </div>
+            <div
+              :class="['emoji', currentFace == 'heart' ? 'active-emoji' : '']"
+              @click="handleHeart"
+            >
+              <van-icon name="like-o" size="1.6rem" style="padding:5px" />
+            </div>
           </div>
         </div>
       </div>
@@ -117,7 +160,6 @@
 
 <script>
 import common from '@/mixins/common'
-
 export default {
   name: 'inputBox2',
   mixins: [common()],
@@ -141,6 +183,9 @@ export default {
       nodeValue: '',
       sel: null,
       range: null,
+      currentFace: 'emoji', // 默认选择 表情
+      heartEmoji: [],
+      heartEmojiLoading: false,
     }
   },
   computed: {},
@@ -297,6 +342,11 @@ export default {
         this.sendMessage()
       }
     },
+    // 发送表情图片
+    sendHeartEmoji(val) {
+      this.$emit('sendMessage', val.phiz_img, 4)
+      this.faceShow = false
+    },
     // 失去焦点获取光标位置
     getblur() {
       this.sel = window.getSelection()
@@ -390,6 +440,20 @@ export default {
     },
     inputSlideRecord(e) {
       this.$emit('slideRecord', e)
+    },
+    // 点击 表情
+    handleEmoji() {
+      console.log(this.currentFace, 222)
+      if (this.currentFace === 'emoji') return
+      this.currentFace = 'emoji'
+      this.faceContent()
+    },
+    // 点击 自定义表情tab
+    handleHeart() {
+      console.log(this.currentFace, 111)
+      if (this.currentFace === 'heart') return
+      this.currentFace = 'heart'
+      this.getPhizListData()
     },
   },
 }

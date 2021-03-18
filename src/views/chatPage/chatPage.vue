@@ -1,5 +1,5 @@
 <template>
-  <div id="click_head_portrait" class="chat_serve w">
+  <div class="chat_serve w">
     <div v-show="loading" class="loading_box">
       <van-loading size="45" class="loading" color="#02c0fe" />
     </div>

@@ -218,3 +218,14 @@ export function createGroupUser (params) {
     data: qs.stringify(params)
   })
 }
+/**
+ * 获取 自定义表情
+ * @param {*} params 
+ */
+export function getPhizList (params) {
+  return Axios({
+    url: 'service/getPhizList',
+    method: 'post',
+    data: qs.stringify(params)
+  })
+}

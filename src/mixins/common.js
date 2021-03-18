@@ -2,7 +2,8 @@ import {
   getNews,
   serviceSendChatFile,
   getNewsList,
-  userDecode
+  userDecode,
+  getPhizList
 } from "@/api/chat.js";
 import {
   isIE,
@@ -12,8 +13,6 @@ import {
   segmentation,
   createUserName
 } from "@/libs/utils.js";
-// const appData = require("@/assets/emojis.json");
-// import { emojisAmap, wChatToUi } from '@/assets/emjoy/emjoydata'
 import { emojisAmap } from '@/assets/face/index'
 import { mapState, mapMutations } from "vuex";
 import Recorder from "js-audio-recorder";
@@ -50,6 +49,7 @@ export default function () {
         receptionId: 0
       };
     },
+
     watch: {
       screenWidth (val) {
         if (val < 540) {
@@ -71,12 +71,9 @@ export default function () {
               arr.pop()
             }
           })
-          // this.sendText = conversionFace(arr.join('['))
           this.sendText = arr.join('[')
         }
-        // else {
-        //   this.sendText = conversionFace(str)
-        // }
+
       },
       //更新公告
       '$store.state.newNews': {
@@ -148,38 +145,22 @@ export default function () {
         }
       },
       faceContent () {
-        this.faceShow = !this.faceShow
+        // this.faceShow = !this.faceShow
+        this.faceShow = true
         this.faceShow == true
           ? (this.faceList = Object.values(emojisAmap))
           : (this.faceList = [])
-
-        // this.faceShow = !this.faceShow
-        // if (this.faceShow == true) {
-        //   for (let key in emojisAmap) {
-        //     let obj = {}
-        //     obj[key] = emojisAmap[key]
-        //     obj.name = `[${key}]`
-        //     obj.oldName = key
-        //     this.faceList.push(obj)
-        //   }
-        //   for (let key in wChatToUi) {
-        //     let obj = {}
-        //     obj[wChatToUi[key]] = key
-        //     obj.name = wChatToUi[key]
-        //     obj.oldName = key
-        //     this.faceList.push(obj)
-        //   }
-        // } else {
-        //   this.faceList = []
-        // }
-        // this.faceShow = !this.faceShow;
-        // if (this.faceShow == true) {
-        //   for (let i in appData) {
-        //     this.faceList.push(appData[i]);
-        //   }
-        // } else {
-        //   this.faceList = [];
-        // }
+      },
+      getPhizListData () {
+        this.heartEmojiLoading = true
+        getPhizList({ seller_code: this.userInfo.seller.seller_code })
+          .then(res => {
+            this.heartEmoji = res.data.data
+            this.heartEmojiLoading = false
+          })
+          .catch(err => {
+            console.log(err)
+          })
       },
       getBrow (value) {
         this.sendText += `[${value}]`
@@ -445,8 +426,12 @@ export default function () {
             setStorage(code, JSON.stringify(obj))
           }
         } else {
-          obj[username] = valueObj
-          setStorage(code, obj);
+          if (code) {
+            obj[username] = valueObj
+            setStorage(code, obj);
+          } else {
+            return
+          }
         }
         this.$store.commit("setUsername", username);
         this.$store.commit("setCode", code);
@@ -540,25 +525,32 @@ export default function () {
             }
           };
         }
-      }
+      },
     },
+
     mounted () {
       // 点击表情框以外就隐藏
       let that = this;
-      document.addEventListener("click", function (e) {
-        let flag = e.target.contains(
-          document.getElementsByClassName("click_head_portrait")[0]
-        );
-        if (flag) return;
-        that.faceShow = false;
-        that.faceList = []
-      });
+      // document.addEventListener("click", function (e) {
+      //   console.log(document.getElementById("click_head_portrait_emoji"))
+      //   let flag = e.target.contains(
+      //     document.getElementById(that.$refs.click_head_portrait_emoj)
+      //   );
+      //   console.log(flag)
+      //   if (flag) return;
+      //   that.faceShow = false;
+      //   that.faceList = []
+      // });
       window.addEventListener("resize", function () {
         that.screenWidth = document.body.offsetWidth;
       });
       this.startCanvas();
       // 测试刷新 关闭
       // this.closed()
+
+    },
+    destroyed () {
+      document.removeEventListener('click', this.notClick)
     }
-  };
+  }
 }

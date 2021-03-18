@@ -134,14 +134,17 @@
                 </div>
               </div>
               <p
-                v-else-if="item.type === 1"
+                v-else-if="item.type === 1 || item.type === 4"
                 class="content left"
                 style="padding:4px"
               >
                 <img
                   @load="loadImg"
                   @click="imageView(index, item.content || item.message)"
-                  class="send_img send_img_left"
+                  :class="[
+                    item.type === 4 ? 'emojiImg' : 'send_img',
+                    'send_img_left',
+                  ]"
                   :src="item.content || item.message"
                   alt
                 />
@@ -265,14 +268,17 @@
               </div>
 
               <p
-                v-else-if="item.type === 1"
+                v-else-if="item.type === 1 || item.type === 4"
                 class="content right"
                 style="padding:4px"
               >
                 <img
                   @load="loadImg"
                   @click="imageView(index, item.content || item.message)"
-                  class="send_img send_img_right"
+                  :class="[
+                    item.type === 4 ? 'emojiImg' : 'send_img',
+                    'send_img_right',
+                  ]"
                   :src="item.content || item.message"
                   alt
                 />
